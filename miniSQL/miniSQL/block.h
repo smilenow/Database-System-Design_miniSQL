@@ -36,6 +36,15 @@
  
 */
 
+/*
+ 
+ v1.1 from Xinyuan Lu
+ What's new in v1.1：
+ 1. 增加一个指示该block是否被锁住的变量is_block
+ 2. 将整个块的大小改为4096byte，而不是内容
+ 
+ */
+
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -50,9 +59,10 @@ public:                     // 块头数据
     int ContentSize;        // 该块的有效长度
     bool Is_Valid;          // 删除标志
     bool Is_Index;          // index标志位
+    bool Is_Blocked;        // 是否被block
     
 public:                         // 块数据
-    char Content[block_size];   // 块数据
+    char Content[block_size-head_size];   // 块数据
     
 public:                     // 其他
     int Offset;             // 该block在文件中的偏移量
@@ -65,6 +75,8 @@ public:
     char* getContent(); // 获取数据信息
     int getContentSize();      // 获取块内部的数据长度,以便getContent时候的操作
     void debug(bool requireContent = false);       // 用于测试
+    void block();       // 上锁
+    void unblock();     // 解锁
 };
 
 #endif /* defined(__miniSQL__block__) */

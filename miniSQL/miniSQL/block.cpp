@@ -6,6 +6,15 @@
 //  Copyright (c) 2014 Jiaquan Yin. All rights reserved.
 //
 
+/*
+ 
+ v1.1 from Xinyuan Lu
+ What's new in v1.1：
+ 1. 增加一个指示该block是否被锁住的变量is_block初始化
+ 2. 实现锁住、解锁方法
+ 
+ */
+
 #include "block.h"
 
 Block::Block(){
@@ -14,6 +23,7 @@ Block::Block(){
     ContentSize = 0;
     Is_Valid = true;
     Is_Index = false;
+    Is_Blocked = false;
     
     Offset = 0;
     Is_Dirty = true;
@@ -26,6 +36,7 @@ Block::Block(bool index){
     ContentSize = 0;
     Is_Valid = false;
     Is_Index = index;
+    Is_Blocked = false;
     
     Offset = 0;
     Is_Dirty = true;
@@ -33,6 +44,14 @@ Block::Block(bool index){
 
 void Block::dirty(){
     Is_Dirty = true;
+}
+
+void Block::block(){
+    Is_Blocked = true;
+}
+
+void Block::unblock(){
+    Is_Blocked = false;
 }
 
 char* Block::getContent(){

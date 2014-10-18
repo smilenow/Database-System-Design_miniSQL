@@ -13,23 +13,21 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "base.h"
-#include "block.h"
-#include "BufferManager.h"
+#include "Base.h"
+#include "Block.h"
 
-#define _string_type    0
-#define _int_type       1
-#define _float_type     2
+#define _string_type    1
+#define _int_type       0
+#define _float_type     -1
 
 #define _leaf_type 0
 #define _inner_type 1
 
-extern BufferManager *_buffermanager;
 
 //存放值的类
 class Value{
 private:                    // 用type来区别是哪种类型,由于没有写多态,所以开了三种类型来选择
-    int type;               // 0 string 1 int 2 float
+    int type;               // 1 string 0 int -1 float
     std::string charKey;
     int intKey;
     float floatKey;
@@ -56,31 +54,39 @@ public:
     std::string getKey();
 };
 
-// B+树节点的类
-class Node{
+struct slot{
+    int block_id;
+    int offset;
+};
+
+// B+树节点的类 一个节点就是一个block
+class IndexBlock: public Block{
 private:
-    std::vector<Value> info;    // 去除了节点头的 B+树节点内容
-    std::string IndexName;      // 索引名称
+    std::vector<Value> key;     // 去除了节点头的 B+树节点内容
+    std::vector<slot> slots;    // 节点与节点之间的slot,非叶子则是只有一个指向孩子的块bid,叶子则有指向bid和offset的信息
     int NodeType;               // 判断叶子还是非叶子,叶子0非叶子1
-    int cnt;                    // 当前节点拥有的节点数
-    int ptrNum;                 // 当前节点应该拥有的节点数N
+    int nowkey;                 // 当前节点拥有的节点数
+    int maxkey;                 // 当前节点应该拥有的节点数N
     int AttrType;               // 索引对应的类型
-    int offset;                 // 偏移量
-    Block block;                // 块
-    Table nowTable;             // 当前表
     void read();                // 把块的内容读出来
 public:
-    Node(std::string IndexName,Table nowTable,int n);
-    Node(std::string IndexName,Table nowTable,int n,int offset);
-    Node(std::string IndexName,Table nowTable,int n,int offset,int tag); // tag用于区分和第二个有读入的构造函数的区别,在实际构造的时候不起作用
-    virtual ~Node();    // 析构的时候要把数据写入之后才能销毁数据
-    int getOffset() const { return offset; };
-    
-    //设置 去除了节点头的 B+树节点内容
-    void set(std::vector<Value> T){ info.clear(); info = T; update(); }
-    
-    //更新该节点当前指针数
-    void update();
+    IndexBlock():nowkey(0){ clr(); };
+    IndexBlock(int NodeType):NodeType(NodeType),nowkey(0){ clr(); calc_maxkey(); };
+    IndexBlock(int NodeType,int AttrType):NodeType(NodeType),nowkey(0),AttrType(AttrType){ clr(); calc_maxkey(); };
+    ~IndexBlock(){ clr(); };
+    // 对两个vetor进行清空
+    void clr(){
+        key.clear(); slots.clear();
+    };
+    // 计算块头大小
+    void calc_head_size(){
+        head_size = sizeof(Block) + 24*2 /* 两个vector */ + 4*sizeof(int);
+    };
+    // 计算一个block最大可以存放的key值
+    void calc_maxkey(){
+        calc_head_size();
+        maxkey = (block_size - head_size - sizeof(slot)) / (sizeof(Value)+sizeof(slot));
+    }
 };
 
 class BPlusTree{

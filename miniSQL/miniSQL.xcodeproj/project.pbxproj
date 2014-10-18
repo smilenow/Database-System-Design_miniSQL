@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		5F55C9E119EC393000785228 /* BPlusTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F55C9DF19EC393000785228 /* BPlusTree.cpp */; };
 		5F8F6D3419EC126B00CADD3E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F6D3319EC126B00CADD3E /* main.cpp */; };
-		5F8F6D3E19EC1A6C00CADD3E /* block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F8F6D3C19EC1A6C00CADD3E /* block.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,7 +29,6 @@
 		5F8F6D3019EC126B00CADD3E /* miniSQL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = miniSQL; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F8F6D3319EC126B00CADD3E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5F8F6D3B19EC12B000CADD3E /* base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
-		5F8F6D3C19EC1A6C00CADD3E /* block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = block.cpp; sourceTree = "<group>"; };
 		5F8F6D3D19EC1A6C00CADD3E /* block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -66,7 +64,6 @@
 			children = (
 				5F8F6D3319EC126B00CADD3E /* main.cpp */,
 				5F8F6D3B19EC12B000CADD3E /* base.h */,
-				5F8F6D3C19EC1A6C00CADD3E /* block.cpp */,
 				5F8F6D3D19EC1A6C00CADD3E /* block.h */,
 				5F55C9DF19EC393000785228 /* BPlusTree.cpp */,
 				5F55C9E019EC393000785228 /* BPlusTree.h */,
@@ -132,7 +129,6 @@
 			files = (
 				5F8F6D3419EC126B00CADD3E /* main.cpp in Sources */,
 				5F55C9E119EC393000785228 /* BPlusTree.cpp in Sources */,
-				5F8F6D3E19EC1A6C00CADD3E /* block.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -2,81 +2,56 @@
 //  block.h
 //  miniSQL
 //
-//  Created by SmilENow on 10/13/14.
-//  Copyright (c) 2014 Jiaquan Yin. All rights reserved.
+//  Created by Kael on 10/18/14.
+//  Copyright (c) 2014 Xinyuan Lu. All rights reserved.
 //
 
-#ifndef __miniSQL__block__
-#define __miniSQL__block__
+// block_v2.0.h, 根据讨论结果重新编写
+// 现在的block类只是一个抽象类
+// 只提供了最基础的需要共享的几个成员变量
+// 具体实现参见各block子类
+// 建议子类命名：DataBlock, IndexBlock, CatalogBlock
 
-// 缓冲数据块
-// 当收到 BufferManager 传回的块后
-// 用 getContent 得到内部数据(字符串数组)的指针
-// 用 getSize 得到内部数据的有效大小/长度
-// 主要用在 IndexManager, BufferManger, RecordManager 中
+// v2.1, thank Jiaquan Yin for his suggestion
 
+#ifndef __BLOCK__
+#define __BLOCK__
 
-/*
+#include <cstring>
 
- 文件中 块结构 定义如下:
- [Head][Content]
- Head_Size 64
- Block_Size/Content_Size 4096
- 
- Head结构 如果疏漏,请小伙伴们指出
- Table_Name     char*       32      该块表名
- Offset         int         4       偏移量
- Next_Offset    int         4       下一块偏移
- Content_Size   int         4       该块的有效长度/用来判断能否继续插入
- Is_Valid       bool        1       删除标志
- Is_Index       bool        1       index标志位
- 
- Content 结构
- Content        char*       4096    4k大小的block,用于存储数据
- 
-*/
+#define block_size 4096
 
-/*
- 
- v1.1 from Xinyuan Lu
- What's new in v1.1：
- 1. 增加一个指示该block是否被锁住的变量is_block
- 2. 将整个块的大小改为4096byte，而不是内容
- 
- */
-
-#include <stdio.h>
-#include <string>
-#include <vector>
-
-#define block_size  4096
-#define head_size   64
-
-class Block{
-public:                     // 块头数据
-    char TableName[32];     // 表名
-    int NextOffset;         // 下一块在文件中的偏移量
-    int ContentSize;        // 该块的有效长度
-    bool Is_Valid;          // 删除标志
-    bool Is_Index;          // index标志位
-    bool Is_Blocked;        // 是否被block
-    
-public:                         // 块数据
-    char Content[block_size-head_size];   // 块数据
-    
-public:                     // 其他
-    int Offset;             // 该block在文件中的偏移量
-    bool Is_Dirty;          // 脏数据标志位
-    
+class Block
+{
 public:
-    Block();            // 初始化块,先把空间给开够,无论它用不用,这样就可以满足课程理论的设计要求了
-    Block(bool index);  // 为索引初始化块
-    void dirty();       // 设置为脏数据,同时注意如果替换的时候必须要把脏数据写回memory
-    char* getContent(); // 获取数据信息
-    int getContentSize();      // 获取块内部的数据长度,以便getContent时候的操作
-    void debug(bool requireContent = false);       // 用于测试
-    void block();       // 上锁
-    void unblock();     // 解锁
+	char tablename[32];
+	int block_id;		// 该block在它所在的文件中是第几个
+	bool is_valid;		// valid/garbage
+	bool is_pin;		// 是否被锁住
+	bool is_dirty;		// 是否被修改过
+	int head_size;		// head的大小
+
+public:
+	Block(): block_id(0), is_valid(true), is_pin(false), is_dirty(false), head_size(0){
+		memset(tablename, 0, sizeof(tablename));
+	}
+	Block(const char *Tablename):block_id(0), is_valid(true), is_pin(false), is_dirty(false), head_size(0){
+		strcpy(tablename, Tablename);
+	}
+
+	int get_id()const{return block_id;}
+	void set_id(const int &bid){block_id=bid;}
+	
+	bool get_valid()const{return is_valid;}
+	void set_valid(const bool &valid){is_valid=valid;}
+	
+	bool get_pin()const{return is_pin;}
+	void set_pin(const bool &pin){is_pin=pin;}
+	
+	bool get_dirty()const{return is_dirty;}
+	void set_dirty(const bool &dirty){is_dirty=dirty;}
+	virtual int calc_head_size()=0;
+	virtual ~Block()=0;
 };
 
-#endif /* defined(__miniSQL__block__) */
+#endif

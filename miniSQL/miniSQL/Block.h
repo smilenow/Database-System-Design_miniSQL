@@ -14,6 +14,8 @@
 
 // v2.1, thank Jiaquan Yin for his suggestion
 
+// v3.0, Add two Ctor with block_id , By. Jiaquan Yin
+
 #ifndef __BLOCK__
 #define __BLOCK__
 
@@ -38,6 +40,12 @@ public:
 	Block(const char *Tablename):block_id(0), is_valid(true), is_pin(false), is_dirty(false), head_size(0){
 		strcpy(tablename, Tablename);
 	}
+    Block(int block_id):block_id(block_id),is_valid(true),is_pin(false),is_dirty(false),head_size(0){
+        memset(tablename, 0, sizeof(tablename));
+    }
+    Block(int block_id,const char *Tablename):block_id(block_id),is_valid(true),is_pin(false),is_dirty(false),head_size(0){
+		strcpy(tablename, Tablename);
+    }
 
 	int get_id()const{return block_id;}
 	void set_id(const int &bid){block_id=bid;}

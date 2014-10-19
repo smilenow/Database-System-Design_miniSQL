@@ -31,6 +31,33 @@ std::string Value::getKey(){
 
 //------------------------------------------------------------------------------------------//
 
+void IndexBlock::init(){
+    clr();
+    calc_maxkey();
+    init_key_slots();
+};
+
+IndexBlock::IndexBlock(std::string IndexName,int NodeType):IndexName(IndexName),NodeType(NodeType),nowkey(0){ init(); };
+
+IndexBlock::IndexBlock(std::string IndexName,int NodeType,int AttrType):IndexName(IndexName),NodeType(NodeType),nowkey(0),AttrType(AttrType){
+    init();
+};
+
+IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0){
+    init();
+};
+
+IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),AttrType(AttrType){
+    init();
+};
+
+
+IndexBlock::~IndexBlock(){
+    //要把东西写回buffer
+    //然后clear
+    clr();
+}
+
 void IndexBlock::read(){ // buffer 怎么给我？
     
 }
@@ -38,52 +65,59 @@ void IndexBlock::read(){ // buffer 怎么给我？
 
 //------------------------------------------------------------------------------------------//
 
-// 从buffer里面读入,需要和buffermanager商量给出来的是什么
-void Node::read(){
-    for (auto &i:nowTable.AttrList)
-        if (i.name == IndexName){
-            switch (i.datatype) {
-                case -1:
-                    AttrType = _float_type;
-                    break;
-                case 0:
-                    AttrType = _int_type;
-                    break;
-                case 1:
-                    AttrType = _string_type;
-                    break;
-                default:
-                    break;
-            }
+void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType){
+    int NewBlockID;
+    // buffer 给我申请一个可用的block_id,记为NewBlockID
+    root = new IndexBlock(IndexName,0,IndexType);
+}
+
+bool BPlusTree::isLess(const Value & k1, const Value & k2){
+    switch (k1.getType()) {
+        case _int_type:
+            return (k1.getIntKey() < k2.getIntKey());
+            break;
+        case _float_type:
+            return (k1.getFloatKey() < k2.getFloatKey());
+            break;
+        case _string_type:
+            return (k1.getCharKey() < k2.getCharKey());
+            break;
+        default:
             break;
     }
+    return false;
+};
+
+bool BPlusTree::isLessEqual(const Value & k1, const Value & k2){
+    switch (k1.getType()) {
+        case _int_type:
+            return (k1.getIntKey() <= k2.getIntKey());
+            break;
+        case _float_type:
+            return (k1.getFloatKey() <= k2.getFloatKey());
+            break;
+        case _string_type:
+            return (k1.getCharKey() <= k2.getCharKey());
+            break;
+        default:
+            break;
+    }
+    return false;
+};
+
+bool BPlusTree::isEqual(const Value & k1, const Value & k2){
+    switch (k1.getType()) {
+        case _int_type:
+            return (k1.getIntKey() == k2.getIntKey());
+            break;
+        case _float_type:
+            return (k1.getFloatKey() == k2.getFloatKey());
+            break;
+        case _string_type:
+            return (k1.getCharKey() == k2.getCharKey());
+            break;
+        default:
+            break;
+    }
+    return false;
 }
-
-Node::Node(std::string IndexName,Table nowTable,int n):IndexName(IndexName),nowTable(nowTable),ptrNum(n){
-    block = _buffermanager->newIndexBlock(IndexName);
-    offset = block.Offset;
-}
-
-Node::Node(std::string IndexName,Table nowTable,int n,int offset):IndexName(IndexName),nowTable(nowTable),ptrNum(n),offset(offset){
-    block = _buffermanager->newIndexBlock(IndexName,offset);
-    read();
-}
-
-Node::Node(std::string IndexName,Table nowTable,int n,int offset,int tag):IndexName(IndexName),nowTable(nowTable),ptrNum(n),offset(offset){
-    block = _buffermanager->newIndexBlock(IndexName,offset);
-}
-
-Node::~Node(){ // 这里面要和buffermanager商量好怎么写入数据，先空着
-    
-}
-
-void Node::update(){
-    cnt = 0;
-    for (int i=0;i<info.size();i+=2) cnt++;
-}
-
-
-
-//------------------------------------------------------------------------------------------//
-
-

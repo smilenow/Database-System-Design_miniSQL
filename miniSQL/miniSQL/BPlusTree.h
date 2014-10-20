@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <queue>
 #include "Base.h"
 #include "Block.h"
 
@@ -52,11 +53,15 @@ public:
     
     //具体函数看.cpp,获取key的值,用string输出
     std::string getKey();
+    void resetKey();
 };
 
 struct slot{
     int block_id;
     int offset;
+    slot():block_id(-1),offset(-1){};
+    slot(int bid,int offset):block_id(bid),offset(offset){};
+    void reset(){ block_id=-1,offset=-1; }
 };
 
 // B+树节点的类 一个节点就是一个block
@@ -64,11 +69,14 @@ class IndexBlock: public Block{
 public:
     std::vector<Value> key;     // 去除了节点头的 B+树节点内容
     std::vector<slot> slots;    // 节点与节点之间的slot,非叶子则是只有一个指向孩子的块bid,叶子则有指向bid和offset的信息
+    // 标记每个slot的指针
+    std::vector<IndexBlock* > slots_child;
     std::string IndexName;      // 索引的名字
     int NodeType;               // 判断叶子还是非叶子,叶子0非叶子1
     int nowkey;                 // 当前节点拥有的节点数
     int maxkey;                 // 当前节点应该拥有的节点数N
     int AttrType;               // 索引对应的类型
+    int split;                  // 判断是否有分裂
 public:
     IndexBlock():nowkey(0){ clr(); };
     IndexBlock(std::string IndexName,int NodeType);
@@ -86,11 +94,15 @@ public:
     // 对两个vetor进行清空
     void clr(){
         key.clear(); slots.clear();
+        for (auto &i: slots_child) delete i;
+        slots_child.clear();
     };
     // 对key slots这两个vector进行大小的初始化定义
     void init_key_slots(){
         key.resize(maxkey);
-        slots.resize(maxkey+1);
+        slots.resize(maxkey);
+        slots_child.resize(maxkey);
+        for (auto &i: slots_child) i = NULL;
     }
     // 计算块头大小
     void calc_head_size(){
@@ -99,82 +111,40 @@ public:
     // 计算一个block最大可以存放的key值
     void calc_maxkey(){
         calc_head_size();
-        maxkey = (block_size - head_size - sizeof(slot)) / (sizeof(Value)+sizeof(slot));
+        maxkey = (block_size - head_size) / (sizeof(Value)+sizeof(slot)+sizeof(IndexBlock*));
     }
     // 获取最后一个slot
-    slot get_last_slot() const {
-        return slots[slots.size()-1];
+    IndexBlock* get_last_slot_child() const {
+        return slots_child[slots_child.size()-1];
     }
-    void set_last_slot(const slot& nowslot){
-        slots[slots.size()-1] = nowslot;
+    // 设置最后一个slot
+    void set_last_slot(IndexBlock* nowslot_child){
+        slots_child[slots_child.size()-1] = nowslot_child;
     }
 };
 
 class BPlusTree{
 public:
     BPlusTree(){};
-    void Create_BPlusTree(std::string IndexName,int IndexType);
-    std::pair<std::string,int> Save_BPlusTree(){ return make_pair(root->IndexName,root->block_id); };
+    void Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);
     
     // Value类的比较函数
     bool isLess(const Value&,const Value&);
     bool isLessEqual(const Value&, const Value&);
     bool isEqual(const Value&,const Value&);
     
-    
+    // 查找对应的slot
+    bool find(IndexBlock* nownode,Value key);
+    // 等值查询，返回一个slot
+    slot search(IndexBlock* nownode,Value key);
+    // 插入
+    IndexBlock* insert(IndexBlock* nownode, Value key,slot keyslot);
+    // 把叶子连接在一起
+    void Link_Leaf();
+    void _delete(IndexBlock* nownode,Value key);
     
 public:
     IndexBlock *root;
 };
-
-/*
-class BPlusTree{
-private:
-    int cnt;                // 节点指针数
-    int type;               // 键值类型
-    std::string IndexName;  // 索引名称
-    Table nowTalbe;         // 当前表
-    int root;               // 根节点
-    
-    class _Parent{
-    public:
-        int NodePtr,ParentPtr;  // 当前节点的对应的父节点
-    };
-    std::vector<_Parent> ParentMap; // 当前父节点列表
-    
-    bool Less(const Value &k1, const Value &k2); // 小于比较
-    bool Equal(const Value &k1, const Value &k2); // 等于比较
-    bool LessEqual(const Value &k1, const Value &k2); // 小于等于比较
-    
-    // 插入到叶子
-    void insertToLeaf(Node node,Value key,int pointer);
-    // 插入到非叶子 传进去的是要更新的父节点的子节点
-    void insertToNonLeaf(Node node,Value key,int pointer);
-    // 查找叶子节点,如果没有找到返回-1,如果找到了就返回叶子在叶子节点的整个偏移量
-    int findLeaf(Value key);
-    // 用ParentMap来查找当前节点ptr的父节点
-    int findParent(int ptr);
-    
-public:
-    // 构造？
-    BPlusTree(int type);
-    
-    // 建立B+树
-    void CreateBPlusTree(Table nowTable, std::string IndexName, int type);
-    
-    // 载入B+树
-    void loadBPlusTree(std::string IndexName);
-    
-    // 插入节点
-    void _insert(Value key,int pointer);
-    
-    // 在B+树中找到相对应的key值,并返回key值绑定的偏移量(在总文件中的偏移量)
-    int find(Value key);
-    
-    // 删除节点
-    void _delete(Value key);
-    
-};
-*/
 
 #endif /* defined(__miniSQL__BPlusTree__) */

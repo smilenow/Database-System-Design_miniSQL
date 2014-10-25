@@ -32,24 +32,28 @@ private:                    // 用type来区别是哪种类型,由于没有写�
     std::string charKey;
     int intKey;
     float floatKey;
-
+    bool Valid;
+    
 public:
     // 构造
-    Value(int type):type(type){};
-    Value(int type,std::string k):type(type),charKey(k){};
-    Value(int type,int k):type(type),intKey(k){};
-    Value(int type,float k):type(type),floatKey(k){};
+    Value():type(0),intKey(0),Valid(false){};
+    Value(int type):type(type),Valid(true){};
+    Value(int type,std::string k):type(type),charKey(k),Valid(true){};
+    Value(int type,int k):type(type),intKey(k),Valid(true){};
+    Value(int type,float k):type(type),floatKey(k),Valid(true){};
     
     //获取类型属性和相对应的值
     int getType() const { return type; };
     int getIntKey() const { return intKey; };
     float getFloatKey() const { return floatKey; };
+    bool getValid() const { return Valid; }
     std::string getCharKey() const { return charKey; };
     
     //设置对应的值
     void setKey(int k) { intKey = k; };
     void setKey(float k) { floatKey = k; };
     void setKey(std::string k) { charKey = k; };
+    void setValid(bool v) { Valid = v; }
     
     //具体函数看.cpp,获取key的值,用string输出
     std::string getKey();
@@ -78,7 +82,7 @@ public:
     int AttrType;               // 索引对应的类型
     int split;                  // 判断是否有分裂
 public:
-    IndexBlock():nowkey(0){ clr(); };
+    IndexBlock():Block(),nowkey(0){ clr(); };
     IndexBlock(std::string IndexName,int NodeType);
     IndexBlock(std::string IndexName,int NodeType,int AttrType);
     //这两个tag是因为Ctor不能接受同样的parameter来构造，和上述的会混淆
@@ -97,6 +101,7 @@ public:
         for (auto &i: slots_child) delete i;
         slots_child.clear();
     };
+    
     // 对key slots这两个vector进行大小的初始化定义
     void init_key_slots(){
         key.resize(maxkey);
@@ -104,19 +109,23 @@ public:
         slots_child.resize(maxkey);
         for (auto &i: slots_child) i = NULL;
     }
+    
     // 计算块头大小
     void calc_head_size(){
         head_size = sizeof(IndexBlock);
     };
+    
     // 计算一个block最大可以存放的key值
     void calc_maxkey(){
         calc_head_size();
         maxkey = (block_size - head_size) / (sizeof(Value)+sizeof(slot)+sizeof(IndexBlock*));
     }
+    
     // 获取最后一个slot
     IndexBlock* get_last_slot_child() const {
         return slots_child[slots_child.size()-1];
     }
+    
     // 设置最后一个slot
     void set_last_slot(IndexBlock* nowslot_child){
         slots_child[slots_child.size()-1] = nowslot_child;
@@ -125,23 +134,47 @@ public:
 
 class BPlusTree{
 public:
-    BPlusTree(){};
+    BPlusTree():root(NULL){};
     void Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);
+    //
+    
+    // buffer怎么给？
+    void load_BPlusTree();
+    void save_BPlusTree();
+    //
     
     // Value类的比较函数
     bool isLess(const Value&,const Value&);
     bool isLessEqual(const Value&, const Value&);
     bool isEqual(const Value&,const Value&);
+    bool compare(const slot&, const slot&);
     
     // 查找对应的slot
-    bool find(IndexBlock* nownode,Value key);
+    std::pair<Value *,slot *> find(IndexBlock* nownode,Value key);
+    // 查找对应的IndexBlock,用于范围查询的>和>=
+    IndexBlock* findBigger(IndexBlock* nownode,Value key);
+    
     // 等值查询，返回一个slot
-    slot search(IndexBlock* nownode,Value key);
+    slot search(IndexBlock* nownode,Value key); // ==
+    
+    // 范围查询
+    std::vector<slot> Smaller(Value key); // <
+    std::vector<slot> SmallerEqual(Value key); // <=
+    std::vector<slot> Bigger(Value key); // >
+    std::vector<slot> BiggerEqual(Value key); // >=
+    
     // 插入
     IndexBlock* insert(IndexBlock* nownode, Value key,slot keyslot);
+    void _insert(Value key,slot keyslot);
+    
     // 把叶子连接在一起
     void Link_Leaf();
+    
+    // 删除
     void _delete(IndexBlock* nownode,Value key);
+    
+    // 删除整棵树
+    void delete_whole_tree(IndexBlock* nownode);
     
 public:
     IndexBlock *root;

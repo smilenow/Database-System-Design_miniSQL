@@ -30,6 +30,7 @@ std::string Value::getKey(){
 }
 
 void Value::resetKey(){
+    Valid = true;
     switch (type) {
         case _string_type:
             charKey="";
@@ -53,9 +54,9 @@ void IndexBlock::init(){
     init_key_slots();
 };
 
-IndexBlock::IndexBlock(std::string IndexName,int NodeType):IndexName(IndexName),NodeType(NodeType),nowkey(0),split(0){ init(); };
+IndexBlock::IndexBlock(std::string IndexName,int NodeType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),split(0){ init(); };
 
-IndexBlock::IndexBlock(std::string IndexName,int NodeType,int AttrType):IndexName(IndexName),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
+IndexBlock::IndexBlock(std::string IndexName,int NodeType,int AttrType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
     init();
 };
 
@@ -86,24 +87,35 @@ void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector
     // buffer 给我申请一个可用的block_id,记为NewBlockID
     root = new IndexBlock(IndexName,NewBlockID,_leaf_type,IndexType);
     for (int i=0;i<data.size();i++){
-        if (find(root,data[i])) printf("Key %s is duplicated\n",data[i].getKey().c_str());
-        else root = insert(root,data[i],dataslot[i]);
+        std::pair<Value *,slot *> tmp = find(root, data[i]);
+        if (tmp.first!=NULL && tmp.first->getValid()==true)
+            printf("Key %s is duplicated\n",data[i].getKey().c_str());
+        else if (tmp.first==NULL) root = insert(root,data[i],dataslot[i]);
+        else tmp.first->setValid(true);
     }
 }
 
-bool BPlusTree::find(IndexBlock *nownode, Value key){
-    if (nownode == NULL) return 0;
+std::pair<Value*,slot*> BPlusTree::find(IndexBlock *nownode, Value key){
+    if (nownode == NULL) return std::make_pair<Value*, slot*>(NULL,NULL);
     if (nownode->NodeType == _leaf_type){
         for (int i=0;i<nownode->nowkey;i++)
-            if (isEqual(nownode->key[i], key)) return 1;
-        return 0;
+            if (isEqual(nownode->key[i], key)) return std::make_pair(&nownode->key[i],&nownode->slots[i]);
+        return std::make_pair<Value*, slot*>(NULL,NULL);
     }
     else {
         for (int i=1;i<nownode->nowkey;i++)
             if (isLess(key, nownode->key[i])) return find(nownode->slots_child[i-1],key);
         return find(nownode->slots_child[nownode->nowkey],key);
     }
-    return 0;
+    return std::make_pair<Value*, slot*>(NULL,NULL);;
+}
+
+IndexBlock* BPlusTree::findBigger(IndexBlock* nownode,Value key){
+    if (nownode == NULL) return NULL;
+    if (nownode->NodeType == _leaf_type) return nownode;
+    for (int i=1;i<nownode->nowkey;i++)
+        if (isLess(key, nownode->key[i])) return findBigger(nownode->slots_child[i-1], key);
+    return findBigger(nownode->slots_child[nownode->nowkey], key);
 }
 
 slot BPlusTree::search(IndexBlock *nownode, Value key){
@@ -282,11 +294,86 @@ void BPlusTree::Link_Leaf(){
     for (int i=1;i<link.size();i++){
         link[i-1]->set_last_slot(link[i]);
     }
+    link[link.size()-1]->set_last_slot(NULL);
+}
+
+void BPlusTree::_insert(Value key,slot keyslot){
+    std::pair<Value*, slot*> tmp = find(root, key);
+    if (tmp.first==NULL){ root = insert(root,key,keyslot); return ; }
+    if (tmp.first->getValid() == true)
+        printf("Key %s is duplicated\n",key.getKey().c_str());
+    else if (tmp.first->getValid() == false && compare(*tmp.second, keyslot)) tmp.first->setValid(true);
+    else tmp.second->block_id=keyslot.block_id, tmp.second->offset=keyslot.offset, tmp.first->setValid(true);
 }
 
 void BPlusTree::_delete(IndexBlock* nownode,Value key){
-    
+    std::pair<Value*, slot*> tmp = find(root,key);
+    if (tmp.first==NULL) return;
+    tmp.first->setValid(false);
 }
+
+void BPlusTree::delete_whole_tree(IndexBlock *nownode) {
+    if (nownode == NULL) return;
+    for (int i=0;i<nownode->maxkey;i++){
+        delete_whole_tree(nownode->slots_child[i]);
+    }
+    delete nownode;
+}
+
+std::vector<slot> BPlusTree::Smaller(Value key){
+    IndexBlock* Leaf = root;
+    while (Leaf->NodeType == _inner_type)
+        Leaf = Leaf->slots_child[0];
+    std::vector<slot> answer;
+    answer.resize(0);
+    while (Leaf != NULL){
+        for (int i=0;i<Leaf->nowkey;i++)
+            if (isLess(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
+            else return answer;
+        Leaf = Leaf->get_last_slot_child();
+    }
+    return answer;
+}
+
+std::vector<slot> BPlusTree::SmallerEqual(Value key){
+    IndexBlock* Leaf = root;
+    while (Leaf->NodeType == _inner_type)
+        Leaf = Leaf->slots_child[0];
+    std::vector<slot> answer;
+    answer.resize(0);
+    while (Leaf != NULL){
+        for (int i=0;i<Leaf->nowkey;i++)
+            if (isLessEqual(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
+            else return answer;
+        Leaf = Leaf->get_last_slot_child();
+    }
+    return answer;
+}
+
+std::vector<slot> BPlusTree::Bigger(Value key){
+    IndexBlock* Leaf = findBigger(root, key);
+    std::vector<slot> answer;
+    answer.resize(0);
+    while (Leaf!=NULL){
+        for (int i=0;i<Leaf->nowkey;i++)
+            if (isLess(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
+        Leaf = Leaf->get_last_slot_child();
+    }
+    return answer;
+}
+
+std::vector<slot> BPlusTree::BiggerEqual(Value key){
+    IndexBlock* Leaf = findBigger(root, key);
+    std::vector<slot> answer;
+    answer.resize(0);
+    while (Leaf!=NULL){
+        for (int i=0;i<Leaf->nowkey;i++)
+            if (isLessEqual(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
+        Leaf = Leaf->get_last_slot_child();
+    }
+    return answer;
+}
+
 
 //------------------------------------------------------------------------------------------//
 
@@ -341,3 +428,6 @@ bool BPlusTree::isEqual(const Value & k1, const Value & k2){
     return false;
 }
 
+bool BPlusTree::compare(const slot & s1, const slot & s2){
+    return (s1.block_id==s2.block_id && s1.offset==s2.offset);
+}

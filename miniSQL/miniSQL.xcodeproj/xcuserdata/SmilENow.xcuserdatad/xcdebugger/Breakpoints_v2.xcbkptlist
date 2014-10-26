@@ -14,9 +14,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "314"
-            endingLineNumber = "314"
-            landmarkName = "BPlusTree::Smaller(Value key)"
-            landmarkType = "5">
+            endingLineNumber = "314">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -31,7 +29,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "113"
             endingLineNumber = "113"
-            landmarkName = "BPlusTree::search(IndexBlock *nownode, Value key)"
+            landmarkName = "BPlusTree::findBigger(IndexBlock* nownode,Value key)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

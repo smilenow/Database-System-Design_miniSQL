@@ -93,7 +93,8 @@ And Here is the requirment of miniSQL project:
 ##3.设计指导
 ###3.1系统体系结构
 MiniSQL体系结构如下
-###3.2模块概述
+
+![image](https://raw.githubusercontent.com/smilenow/Database-System-Design_miniSQL/master/miniSQL%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png?token=AEy8Udw5I8N_o-1LdJtgGwVHYOCH30mhks5UXIq1wA%3D%3D)###3.2模块概述
 ####3.2.1 Interpreter
 Interpreter模块直接与用户交互，主要实现以下功能：
 1.	程序流程控制，即“启动并初始化 → ‘接收命令、处理命令、显示命令结果’循环 → 退出”流程。2.	接收并解释用户输入的命令，生成命令的内部数据结构表示，同时检查命令的语法正确性和语义正确性，对正确的命令调用API层提供的函数执行并显示执行结果，对不正确的命令显示错误信息。

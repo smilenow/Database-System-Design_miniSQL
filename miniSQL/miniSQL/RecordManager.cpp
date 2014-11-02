@@ -176,7 +176,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     std::vector<std::vector<std::string> > conditions = sql.getconditions();    // 查询条件
     std::vector<std::string> what_to_select = sql.GetSelectInfo();  // 需要查询的内容
     std::vector<int> what_to_select_indexof_attrs;                  // 需要查找的内容对应在attrs的index
-    std::vector<int> blocks = buffermanager->getTableblock(TableName);  // 获取table下的block
+    int blocks = buffermanager->get_block_number(DB, TableName);  // 获取table下的block
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
@@ -211,10 +211,10 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
         for (auto &i:slots){
             record_id = i.offset;
             block_id = i.block_id;
-            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,block_id);
-            if (nowblock.content[record_id*tupleLen]==used){
+            RecordBlock *nowblock = dynamic_cast<RecordBlock*>( buffermanager->getBlock(DB,TableName,block_id) );
+            if (nowblock->content[record_id*tupleLen]==used){
                 Row nowtuple;
-                getOneTuple(nowblock, record_id, tupleLen, attrs, nowtuple);
+                getOneTuple(*nowblock, record_id, tupleLen, attrs, nowtuple);
                 if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
                     ReturnRes(nowtuple, res, what_to_select_indexof_attrs);
                     num++;
@@ -225,12 +225,12 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     }
     else {
         if (conditions[0].size()) Exist_Where = true;
-        for (int i=0;i<blocks.size();i++){
-            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,i);
+        for (int i=0;i<blocks;i++){
+            RecordBlock *nowblock = dynamic_cast<RecordBlock*>( buffermanager->getBlock(DB,TableName,i) );
             for (int j=0;j<blockLen;j++)
-                if (nowblock.content[j*tupleLen]==used){
+                if (nowblock->content[j*tupleLen]==used){
                     Row nowtuple;
-                    getOneTuple(nowblock, j, tupleLen, attrs, nowtuple);
+                    getOneTuple(*nowblock, j, tupleLen, attrs, nowtuple);
                     if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
                         ReturnRes(nowtuple, res, what_to_select_indexof_attrs);
                         num++;
@@ -252,7 +252,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     std::vector<std::vector<std::string> > conditions = sql.getconditions();    // 查询条件
     std::vector<std::string> what_to_select = sql.GetSelectInfo();  // 需要查询的内容
     std::vector<int> what_to_select_indexof_attrs;                  // 需要查找的内容对应在attrs的index
-    std::vector<int> blocks = buffermanager->getTableblock(TableName);  // 获取table下的block
+    int blocks = buffermanager->get_block_number(DB, TableName);  // 获取table下的block
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
@@ -270,38 +270,38 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
         for (auto &i : slots){
             record_id = i.offset;
             block_id = i.block_id;
-            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,block_id);
-            if (nowblock.content[record_id*tupleLen]==used){
+            RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,block_id) );
+            if (nowblock->content[record_id*tupleLen]==used){
                 Row nowtuple;
-                getOneTuple(nowblock, record_id, tupleLen, attrs, nowtuple);
+                getOneTuple(*nowblock, record_id, tupleLen, attrs, nowtuple);
                 if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
-                    nowblock.content[record_id*tupleLen]=Unused;
-                    nowblock.is_dirty = true;
-                    nowblock.nowcontentsize -= tupleLen;
+                    nowblock->content[record_id*tupleLen]=Unused;
+                    nowblock->is_dirty = true;
+                    nowblock->nowcontentsize -= tupleLen;
                     successful = true;
                     num++;
                 }
             }
-            buffermanager->storeBlocks(TableName,i,nowblock);
+            buffermanager->storeBlock(TableName,*nowblock);
         }
     }
     else {
         if (conditions[0].size()) Exist_Where = true;
-        for (int i=0;i<blocks.size();i++){
-            RecordBlock &nowblock = buffermanager->getBlocks(TableName,i);
+        for (int i=0;i<blocks;i++){
+            RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,i) );
             for (int j=0;j<blockLen;j++)
-                if (nowblock.content[j*tupleLen]==used){
+                if (nowblock->content[j*tupleLen]==used){
                     Row nowtuple;
-                    getOneTuple(nowblock, j, tupleLen, attrs, nowtuple);
+                    getOneTuple(*nowblock, j, tupleLen, attrs, nowtuple);
                     if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
-                        nowblock.content[j*tupleLen]=Unused;
-                        nowblock.is_dirty = true;
-                        nowblock.nowcontentsize -= tupleLen;
+                        nowblock->content[j*tupleLen]=Unused;
+                        nowblock->is_dirty = true;
+                        nowblock->nowcontentsize -= tupleLen;
                         num++;
                         successful = true;
                     }
                 }
-            buffermanager->storeBlocks(TableName,nowblock);
+            buffermanager->storeBlock(TableName,*nowblock);
         }
     }
     
@@ -319,23 +319,23 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     std::vector<Attribute> attrs = table.AttrList;              // 表的属性
     std::string TableName = table.name;                         // 表的名字
     std::vector<std::string> colValue = sql.getcolValue();      // 需要插入的record值
-    std::vector<int> blocks = buffermanager->getTableblock(TableName);  // 获取该table下的block
+    int blocks = buffermanager->get_block_number(DB, TableName);  // 获取该table下的block
     Recordinfo nowrinfo;                                        // 当前写入记录的返回结果
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
     
     int i;
-    for (i=0;i<blocks.size();i++){
-        RecordBlock & nowblock = buffermanager->getBlocks(TableName,i);
+    for (i=0;i<blocks;i++){
+        RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,i) );
         for (int j=0;j<blockLen;j++){
-            if (nowblock.content[j*tupleLen]==Unused){          // 找到没有使用过的tuple可以插入记录
-                nowrinfo = write(nowblock, j, tupleLen, attrs, colValue);
+            if (nowblock->content[j*tupleLen]==Unused){          // 找到没有使用过的tuple可以插入记录
+                nowrinfo = write(*nowblock, j, tupleLen, attrs, colValue);
                 if (nowrinfo.getSucc()){                        // 成功写入
-                    nowblock.content[j*tupleLen]=used;
-                    nowblock.is_dirty = true;
-                    nowblock.nowcontentsize += tupleLen;
-                    buffermanager->storeBlocks(TableName,nowblock);
+                    nowblock->content[j*tupleLen]=used;
+                    nowblock->is_dirty = true;
+                    nowblock->nowcontentsize += tupleLen;
+                    buffermanager->storeBlock(TableName,*nowblock);
                     block_id = i;
                     record_id = j;
                     return nowrinfo;
@@ -346,15 +346,16 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     }
     
     // 循环完代表写不下了
-    RecordBlock nowblock(i,TableName.c_str());
-    nowrinfo = write(nowblock, 0, tupleLen, attrs, colValue);
+//    RecordBlock nowblock(i,TableName.c_str());
+    RecordBlock *nowblock = dynamic_cast<RecordBlock*>(buffermanager->newBlock(DB, TableName));
+    nowrinfo = write(*nowblock, 0, tupleLen, attrs, colValue);
     if (nowrinfo.getSucc()){
-        nowblock.nowcontentsize += tupleLen;
-        nowblock.is_dirty = true;
-        nowblock.content[0] = used;
+        nowblock->nowcontentsize += tupleLen;
+        nowblock->is_dirty = true;
+        nowblock->content[0] = used;
         block_id = i;
         record_id = 0;
-        buffermanager->storeBlocks(TableName,i,nowblock);
+        buffermanager->storeBlock(TableName,*nowblock);
         return nowrinfo;
     }
     

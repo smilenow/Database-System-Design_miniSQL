@@ -13,7 +13,7 @@
 #include <sstream>
 #include "Base.h"
 #include "Block.h"
-//#include "BufferManager.h"
+#include "BufferManager.h"
 #include "sqlcommand.h"
 
 #define Unused 0x00

@@ -25,49 +25,6 @@
 #define _inner_type 1
 
 
-//存放值的类
-class Value{
-private:                    // 用type来区别是哪种类型,由于没有写多态,所以开了三种类型来选择
-    int type;               // 1 string 0 int -1 float
-    std::string charKey;
-    int intKey;
-    float floatKey;
-    bool Valid;
-    
-public:
-    // 构造
-    Value():type(0),intKey(0),Valid(false){};
-    Value(int type):type(type),Valid(true){};
-    Value(int type,std::string k):type(type),charKey(k),Valid(true){};
-    Value(int type,int k):type(type),intKey(k),Valid(true){};
-    Value(int type,float k):type(type),floatKey(k),Valid(true){};
-    
-    //获取类型属性和相对应的值
-    int getType() const { return type; };
-    int getIntKey() const { return intKey; };
-    float getFloatKey() const { return floatKey; };
-    bool getValid() const { return Valid; }
-    std::string getCharKey() const { return charKey; };
-    
-    //设置对应的值
-    void setKey(int k) { intKey = k; };
-    void setKey(float k) { floatKey = k; };
-    void setKey(std::string k) { charKey = k; };
-    void setValid(bool v) { Valid = v; }
-    
-    //具体函数看.cpp,获取key的值,用string输出
-    std::string getKey();
-    void resetKey();
-};
-
-struct slot{
-    int block_id;
-    int offset;
-    slot():block_id(-1),offset(-1){};
-    slot(int bid,int offset):block_id(bid),offset(offset){};
-    void reset(){ block_id=-1,offset=-1; }
-};
-
 // B+树节点的类 一个节点就是一个block
 class IndexBlock: public Block{
 public:
@@ -140,7 +97,7 @@ public:
     
     // buffer怎么给？
     void load_BPlusTree();
-    void save_BPlusTree();
+    void store_BPlusTree();
     //
     
     // Value类的比较函数

@@ -31,6 +31,7 @@
 		5F55C9E019EC393000785228 /* BPlusTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BPlusTree.h; sourceTree = "<group>"; };
 		5F5735571A062EAC008CCE9C /* Base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Base.cpp; sourceTree = "<group>"; };
 		5F57355A1A062FCD008CCE9C /* sqlcommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlcommand.h; sourceTree = "<group>"; };
+		5F7CF48E1A063A7F009C2D10 /* BufferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferManager.h; sourceTree = "<group>"; };
 		5F8F6D3019EC126B00CADD3E /* miniSQL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = miniSQL; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F8F6D3319EC126B00CADD3E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5FC6A80E19FBC68D003502A1 /* IndexManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndexManager.cpp; sourceTree = "<group>"; };
@@ -76,6 +77,7 @@
 				5FCBF4FE19F3F86E0014C146 /* Base.h */,
 				5F5735571A062EAC008CCE9C /* Base.cpp */,
 				5FCBF4FF19F3F86E0014C146 /* Block.h */,
+				5F7CF48E1A063A7F009C2D10 /* BufferManager.h */,
 				5F55C9DF19EC393000785228 /* BPlusTree.cpp */,
 				5F55C9E019EC393000785228 /* BPlusTree.h */,
 				5FC6A80E19FBC68D003502A1 /* IndexManager.cpp */,

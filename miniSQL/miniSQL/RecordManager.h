@@ -43,9 +43,9 @@ public:
     RecordManager(){};
     virtual ~RecordManager(){};
     // 查找
-    Recordinfo Select_Record(sqlcommand& sql, Table &table, bool indexflag, std::vector<int> offset);
+    Recordinfo Select_Record(sqlcommand& sql, Table &table, bool indexflag, std::vector<slot> slots);
     // 删除
-    Recordinfo Delete_Record(sqlcommand& sql, Table &table, bool indexflag, std::vector<int> offset);
+    Recordinfo Delete_Record(sqlcommand& sql, Table &table, bool indexflag, std::vector<slot> slots);
     // 插入
     Recordinfo Insert_Record(sqlcommand& sql, Table &table, int &block_id, int &record_id);
 public:

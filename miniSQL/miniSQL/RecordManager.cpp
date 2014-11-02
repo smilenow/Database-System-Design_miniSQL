@@ -169,7 +169,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
     }
 }
 
-Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<int> offset){
+Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<slot> slots){
     
     std::vector<Attribute> attrs = table.AttrList;              // 表的属性
     std::string TableName = table.name;                         // 表的名字
@@ -208,10 +208,10 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     
     if (indexflag){
         int block_id,record_id;
-        for (int i=0;i<offset.size();i++){
-            record_id = i % blockLen;
-            block_id = i / blockLen;
-            RecordBlock &nowblock = buffermanager->getBlocks(TableName,block_id);
+        for (auto &i:slots){
+            record_id = i.offset;
+            block_id = i.block_id;
+            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,block_id);
             if (nowblock.content[record_id*tupleLen]==used){
                 Row nowtuple;
                 getOneTuple(nowblock, record_id, tupleLen, attrs, nowtuple);
@@ -226,7 +226,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     else {
         if (conditions[0].size()) Exist_Where = true;
         for (int i=0;i<blocks.size();i++){
-            RecordBlock &nowblock = buffermanager->getBlocks(TableName,i);
+            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,i);
             for (int j=0;j<blockLen;j++)
                 if (nowblock.content[j*tupleLen]==used){
                     Row nowtuple;
@@ -245,7 +245,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     return Recordinfo(successful, message, res, num);
 }
 
-Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<int> offset){
+Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<slot> slots){
 
     std::vector<Attribute> attrs = table.AttrList;              // 表的属性
     std::string TableName = table.name;                         // 表的名字
@@ -267,10 +267,10 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     
     if (indexflag){
         int block_id,record_id;
-        for (int i=0;i<offset.size();i++){
-            record_id = i % blockLen;
-            block_id = i / blockLen;
-            RecordBlock &nowblock = buffermanager->getBlocks(TableName,block_id);
+        for (auto &i : slots){
+            record_id = i.offset;
+            block_id = i.block_id;
+            RecordBlock &nowblock = buffermanager->getBlocks(DB,TableName,block_id);
             if (nowblock.content[record_id*tupleLen]==used){
                 Row nowtuple;
                 getOneTuple(nowblock, record_id, tupleLen, attrs, nowtuple);
@@ -301,7 +301,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                         successful = true;
                     }
                 }
-            buffermanager->storeBlocks(TableName,i,nowblock);
+            buffermanager->storeBlocks(TableName,nowblock);
         }
     }
     
@@ -335,7 +335,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
                     nowblock.content[j*tupleLen]=used;
                     nowblock.is_dirty = true;
                     nowblock.nowcontentsize += tupleLen;
-                    buffermanager->storeBlocks(TableName,i,nowblock);
+                    buffermanager->storeBlocks(TableName,nowblock);
                     block_id = i;
                     record_id = j;
                     return nowrinfo;
@@ -346,7 +346,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     }
     
     // 循环完代表写不下了
-    RecordBlock & nowblock = buffermanager->newBlock(TableName);
+    RecordBlock nowblock(i,TableName.c_str());
     nowrinfo = write(nowblock, 0, tupleLen, attrs, colValue);
     if (nowrinfo.getSucc()){
         nowblock.nowcontentsize += tupleLen;

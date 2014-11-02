@@ -13,20 +13,19 @@
 #include <sstream>
 #include "Base.h"
 #include "Block.h"
-#include "BufferManager.h"
+//#include "BufferManager.h"
 #include "sqlcommand.h"
 
 #define Unused 0x00
 #define used 0x01
 
 
-extern class sqlcommand;
 extern BufferManager *buffermanager;
 // WARNING!
 // message: 这两个接口请务必给好，具体可以看cpp里面我需要的东西，当然如果有方便的方式或者需要更改对应函数变量就直接说好了
 
 
-static int contentsize = block_size-sizeof(Block)-sizeof(int);
+static const int contentsize = block_size-sizeof(Block)-sizeof(int);
 
 class RecordBlock:public Block{
 public:

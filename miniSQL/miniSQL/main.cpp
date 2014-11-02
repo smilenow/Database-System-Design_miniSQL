@@ -9,8 +9,10 @@
 #include <iostream>
 #include "base.h"
 #include "block.h"
+#include "sqlcommand.h"
 #include "IndexManager.h"
 #include "RecordManager.h"
+
 
 int main(int argc, const char * argv[]) {
     return 0;

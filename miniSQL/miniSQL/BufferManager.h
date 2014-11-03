@@ -47,7 +47,7 @@ public:
 	bool storeBlock(Block& block);
 	int get_block_number(int type, std::string tablename);
 
-	std::vector<std::string> load_tree(std::string indexname);
+	std::vector<IndexBlock> load_tree(std::string indexname);
 	bool store_tree(std::string indexname, std::vector<IndexBlock>& tree);
 	bool delete_tree(std::string indexname);
 

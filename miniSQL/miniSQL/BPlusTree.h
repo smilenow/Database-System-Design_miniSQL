@@ -16,6 +16,7 @@
 #include <queue>
 #include "Base.h"
 #include "Block.h"
+#include "BufferManager.h"
 
 #define _string_type    1
 #define _int_type       0
@@ -24,6 +25,7 @@
 #define _leaf_type 0
 #define _inner_type 1
 
+extern BufferManager *buffermanager;
 
 // B+树节点的类 一个节点就是一个block
 class IndexBlock: public Block{
@@ -49,7 +51,6 @@ public:
     // 析构的时候要把信息写回buffer
     ~IndexBlock();
     
-    void read();                // 把块的内容读出来
     void init();                // 用于初始化
     
     // 对两个vetor进行清空
@@ -96,7 +97,9 @@ public:
     //
     
     // buffer怎么给？
-    void load_BPlusTree();
+    void rebuild(IndexBlock *nownode);
+    void load_BPlusTree(std::string IndexName);
+    void FindBPlusTreeAllNode(IndexBlock *nownode);
     void store_BPlusTree();
     //
     
@@ -115,10 +118,11 @@ public:
     slot search(IndexBlock* nownode,Value key); // ==
     
     // 范围查询
-    std::vector<slot> Smaller(Value key); // <
-    std::vector<slot> SmallerEqual(Value key); // <=
-    std::vector<slot> Bigger(Value key); // >
-    std::vector<slot> BiggerEqual(Value key); // >=
+    std::vector<slot> Smaller(Value key);       // <
+    std::vector<slot> SmallerEqual(Value key);  // <=
+    std::vector<slot> Bigger(Value key);        // >
+    std::vector<slot> BiggerEqual(Value key);   // >=
+    std::vector<slot> NotEqual(Value key);      // !=
     
     // 插入
     IndexBlock* insert(IndexBlock* nownode, Value key,slot keyslot);
@@ -135,6 +139,7 @@ public:
     
 public:
     IndexBlock *root;
+    std::vector<IndexBlock> AllNode;
 };
 
 #endif /* defined(__miniSQL__BPlusTree__) */

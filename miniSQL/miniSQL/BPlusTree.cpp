@@ -37,17 +37,15 @@ IndexBlock::~IndexBlock(){
     clr();
 }
 
-void IndexBlock::read(){ // buffer 怎么给我？
-    
-}
-
-
 //------------------------------------------------------------------------------------------//
 
 void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot){
-    int NewBlockID;
+//    int NewBlockID;
     // buffer 给我申请一个可用的block_id,记为NewBlockID
-    root = new IndexBlock(IndexName,NewBlockID,_leaf_type,IndexType);
+//    root = new IndexBlock(IndexName,NewBlockID,_leaf_type,IndexType);
+    
+//    root = buffermanager->
+    
     for (int i=0;i<data.size();i++){
         std::pair<Value *,slot *> tmp = find(root, data[i]);
         if (tmp.first!=NULL && tmp.first->getValid()==true)
@@ -69,7 +67,7 @@ std::pair<Value*,slot*> BPlusTree::find(IndexBlock *nownode, Value key){
             if (isLess(key, nownode->key[i])) return find(nownode->slots_child[i-1],key);
         return find(nownode->slots_child[nownode->nowkey],key);
     }
-    return std::make_pair<Value*, slot*>(NULL,NULL);;
+    return std::make_pair<Value*, slot*>(NULL,NULL);
 }
 
 IndexBlock* BPlusTree::findBigger(IndexBlock* nownode,Value key){
@@ -113,6 +111,8 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
             return nownode;
         } else {
             // 分裂，申请一个新的block
+            
+            
             int i;
             for (i=nownode->nowkey; i>=0; i--)
                 if (isLess(key,nownode->key[i])){
@@ -336,6 +336,20 @@ std::vector<slot> BPlusTree::BiggerEqual(Value key){
     return answer;
 }
 
+std::vector<slot> BPlusTree::NotEqual(Value key){
+    IndexBlock* Leaf = root;
+    while (Leaf->NodeType == _inner_type)
+        Leaf = Leaf->slots_child[0];
+    std::vector<slot> answer;
+    answer.resize(0);
+    while (Leaf != NULL){
+        for (int i=0;i<Leaf->nowkey;i++)
+            if (!isEqual(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
+        Leaf = Leaf->get_last_slot_child();
+    }
+    return answer;
+}
+
 
 //------------------------------------------------------------------------------------------//
 
@@ -392,4 +406,45 @@ bool BPlusTree::isEqual(const Value & k1, const Value & k2){
 
 bool BPlusTree::compare(const slot & s1, const slot & s2){
     return (s1.block_id==s2.block_id && s1.offset==s2.offset);
+}
+
+//------------------------------------------------------------------------------------------//
+
+void BPlusTree::rebuild(IndexBlock *nownode){
+    if (nownode->NodeType == _leaf_type) return;
+    for (int i=0;i<=nownode->nowkey;i++){
+        for (auto &j: AllNode)
+            if (nownode->slots[i].block_id == j.block_id){
+                nownode->slots_child[i] = &j;
+                rebuild(&j);
+            }
+    }
+}
+
+void BPlusTree::load_BPlusTree(std::string IndexName){
+    AllNode.clear();
+    AllNode = buffermanager->load_tree(IndexName);
+    for (auto &i : AllNode){
+        for (auto &j : i.slots_child) delete j;
+        i.slots_child.clear();
+        i.slots_child.resize(i.maxkey);
+        for (auto &j: i.slots_child) j = NULL;
+    }
+    root = &AllNode[0];
+    rebuild(root);
+}
+
+
+void BPlusTree::FindBPlusTreeAllNode(IndexBlock *nownode){
+    if (nownode == NULL) return;
+    AllNode.push_back(*nownode);
+    for (int i=0;i<nownode->maxkey;i++){
+        FindBPlusTreeAllNode(nownode->slots_child[i]);
+    }
+}
+
+void BPlusTree::store_BPlusTree(){
+    AllNode.clear();
+    FindBPlusTreeAllNode(root);
+    buffermanager->store_tree(root->IndexName, AllNode);
 }

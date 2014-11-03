@@ -15,7 +15,8 @@
 
 class IndexManager{
 public:
-    std::unordered_map<std::string,BPlusTree*> BPlusTreeGroup;
+//    std::unordered_map<std::string,BPlusTree*> BPlusTreeGroup;
+    BPlusTree CurrentBPT;
     
 public:
     IndexManager();
@@ -30,6 +31,7 @@ public:
     std::vector<slot> _FindSmallEqual(std::string IndexName,Value key);
     std::vector<slot> _FindBigger(std::string IndexName,Value key);
     std::vector<slot> _FindBiggerEqual(std::string IndexName,Value key);
+    std::vector<slot> _FindNotEqual(std::string IndexName,Value key);
 };
 
 #endif /* defined(__miniSQL__IndexManager__) */

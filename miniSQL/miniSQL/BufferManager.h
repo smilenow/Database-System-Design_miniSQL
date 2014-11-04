@@ -15,6 +15,12 @@
 #include <vector>
 #include <map>
 
+extern class DataBlock;
+extern class IndexBlock;
+extern class TableCatalogBlock;
+extern class IndexCatalogBlock;
+extern class AttributeCatalogBlock;
+
 // #include "DataBlock.h"
 // #include "IndexBlock.h"
 // #include "IndexCatalogBlock.h"
@@ -64,7 +70,7 @@ public:
 	// void create_catalog(std::string tablename);
 	// void create_index(std::string tablename, std::string indexname);
 	bool is_full();
-	void clock_LRU(void *arg);
+	static void* clock_LRU(void *arg);
 	void LRU();
 	void pin_block(int block_n);
 	void unpin_block(int block_n);
@@ -73,13 +79,12 @@ public:
 	int get_available_block();
 public:
 	int block_number;
-	bool reference_bit[Buffer_Capacity];
 
 	// if the pin
 	// but if explicitly required, it should write inspite the pin_bit
-	bool pin_bit[Buffer_Capacity];
-
-	int reference_bit_count;
+	static bool pin_bit[Buffer_Capacity];
+    static bool reference_bit[Buffer_Capacity];
+	static int reference_bit_count;
 	
 	std::map<int, std::string> filename;
 	Block* buffer[Buffer_Capacity];

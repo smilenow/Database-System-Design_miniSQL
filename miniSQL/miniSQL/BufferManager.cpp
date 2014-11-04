@@ -62,22 +62,24 @@ int BufferManager::find_type(Block *block){
 	return 0;
 }
 
-void BufferManager::clock_LRU(void * arg){
+void* BufferManager::clock_LRU(void *arg){
 	while(1){
 		if(pin_bit[reference_bit_count]==false)
 			reference_bit[reference_bit_count]=0;
 		for(int i=0; i<100000; i++);			// time-delay, should modify the argument in order to timing
 		reference_bit_count++;
 	}
+    BufferManager* new_arg=(BufferManager*)arg;
+    return (void *)new_arg;
 }
 
 void BufferManager::LRU(){
 	pthread_t tid;
-	pthread_attr_t attr;
-	void * arg=0;
+//	pthread_attr_t attr;
+//	void * arg=0;
 
-	pthread_attr_init(&attr);
-	pthread_create(&tid, &attr, clock_LRU, arg);
+//	pthread_attr_init(&attr);
+    pthread_create(&tid, NULL, BufferManager::clock_LRU, this);
 }
 
 // 下面三个创建各自目录下的文件，暂时没有用？
@@ -116,13 +118,13 @@ void BufferManager::unpin_block(int block_n){
 bool BufferManager::write_datablock(int block_n){
 	int fd;
 	char fullname[2*max_name_length];
-	std::map::iterator it;
+    std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
 	strcpy(fullname, "~/dsd/data/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-	if(fd=open(fullname, O_RDWR|O_APPEND)<0)
+	if((fd=open(fullname, O_RDWR|O_APPEND))<0)
 		return false;
 	if(write(fd, buffer[block_n], block_size)==-1)
 		return false;
@@ -136,13 +138,13 @@ bool BufferManager::write_datablock(int block_n){
 bool BufferManager::write_catalogblock(int block_n){
 	int fd;
 	char fullname[2*max_name_length];
-	std::map::iterator it;
+    std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
 	strcpy(fullname, "~/dsd/catalog/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-	if(fd=open(fullname, O_RDWR|O_APPEND)<0)
+	if((fd=open(fullname, O_RDWR|O_APPEND))<0)
 		return false;
 	if(write(fd, buffer[block_n], block_size)==-1)
 		return false;
@@ -156,13 +158,13 @@ bool BufferManager::write_catalogblock(int block_n){
 bool BufferManager::write_indexblock(int block_n){
 	int fd;
 	char fullname[2*max_name_length];
-	std::map::iterator it;
+    std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
 	strcpy(fullname, "~/dsd/index/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-	if(fd=open(fullname, O_RDWR|O_APPEND)<0)
+	if((fd=open(fullname, O_RDWR|O_APPEND))<0)
 		return false;
 	if(write(fd, buffer[block_n], block_size)==-1)
 		return false;
@@ -176,7 +178,7 @@ bool BufferManager::write_indexblock(int block_n){
 // 根据LRU写回一个block，修改block_number--
 int BufferManager::write_block(){
 	while(1){
-		if(reference_bit[reference_bit_count]==false && pin_bit[reference_bit]==false){
+		if(reference_bit[reference_bit_count]==false && pin_bit[reference_bit_count]==false){
 			if(buffer[reference_bit_count]->is_dirty){
 				int type=0;
 				Block *block;
@@ -251,7 +253,8 @@ void BufferManager::write_all(){
 // 根据上层指定的block指针写回去一个block，会删除buffer里面的该block
 // 置两个bit
 bool BufferManager::storeBlock(std::string tablename, Block *block){
-	for(int i=0; i<Buffer_Capacity; i++){
+    int i;
+	for(i=0; i<Buffer_Capacity; i++){
 		if(buffer[i]==block) break;
 	}
 	if(i==Buffer_Capacity) assert(0);
@@ -326,8 +329,8 @@ void load_block(int block_n, int type, std::string tablename, int bid, std::stri
 		break;
 	}
 
-	if(fd=open(fullname, O_RDWR)<0)
-		return -1;
+	if((fd=open(fullname, O_RDWR))<0)
+        assert(0);
 
 	switch(type){
 		// 这里真的有必要这样写吗？

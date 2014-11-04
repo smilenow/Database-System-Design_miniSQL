@@ -19,7 +19,7 @@ public:
     BPlusTree CurrentBPT;
     
 public:
-    IndexManager();
+    IndexManager(){};
     virtual ~IndexManager(){};
     
     void CreatIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);

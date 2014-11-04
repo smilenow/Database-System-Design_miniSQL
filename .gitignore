@@ -32,4 +32,5 @@
 *.pbxpoj
 *.xcuserstate
 *.xcuserdatad
-UserInterfaceState.xcuserstate
+*.xcuserstate
+miniSQL/miniSQL.xcodeproj/project.xcworkspace/xcuserdata/SmilENow.xcuserdatad/UserInterfaceState.xcuserstate

@@ -39,7 +39,6 @@ public:
 	std::string getTablen()	{return tablename;}
 	std::string getIndexn()	{return indexname;}
 	std::vector<std::vector<std::string> > getconditions(){
-		std::vector<std::vector<std::string> >::iterator iter;
 		return conditions;
 	}
 	std::vector<std::string> GetSelectInfo(){
@@ -49,7 +48,6 @@ public:
 		return colValue;
 	}
 	std::vector<std::vector<std::string> > getCreateTableInfo(){
-		std::vector<std::vector<std::string> >::iterator iter;
 		return createTableInfo;
 	}
 	//std::string getDropTablen()	{return tablename;}

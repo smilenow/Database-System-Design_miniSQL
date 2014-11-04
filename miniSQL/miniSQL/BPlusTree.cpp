@@ -53,6 +53,7 @@ void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector
         else if (tmp.first==NULL) root = insert(root,data[i],dataslot[i]);
         else tmp.first->setValid(true);
     }
+    Link_Leaf();
 }
 
 std::pair<Value*,slot*> BPlusTree::find(IndexBlock *nownode, Value key){
@@ -65,7 +66,7 @@ std::pair<Value*,slot*> BPlusTree::find(IndexBlock *nownode, Value key){
     else {
         for (int i=1;i<nownode->nowkey;i++)
             if (isLess(key, nownode->key[i])) return find(nownode->slots_child[i-1],key);
-        return find(nownode->slots_child[nownode->nowkey],key);
+        return find(nownode->slots_child[nownode->nowkey-1],key);
     }
     return std::make_pair<Value*, slot*>(NULL,NULL);
 }
@@ -75,20 +76,23 @@ IndexBlock* BPlusTree::findBigger(IndexBlock* nownode,Value key){
     if (nownode->NodeType == _leaf_type) return nownode;
     for (int i=1;i<nownode->nowkey;i++)
         if (isLess(key, nownode->key[i])) return findBigger(nownode->slots_child[i-1], key);
-    return findBigger(nownode->slots_child[nownode->nowkey], key);
+    return findBigger(nownode->slots_child[nownode->nowkey-1], key);
 }
 
 slot BPlusTree::search(IndexBlock *nownode, Value key){
     if (nownode == NULL) return slot(-1,-1);
     if (nownode->NodeType == _leaf_type){
         for (int i=0;i<nownode->nowkey;i++)
-            if (isEqual(nownode->key[i], key)) return nownode->slots[i];
+            if (isEqual(nownode->key[i], key)){
+                if (nownode->key[i].getValid()) return nownode->slots[i];
+                else return slot(-1,-1);
+            }
         return slot(-1,-1);
     }
     else {
         for (int i=1;i<nownode->nowkey;i++)
             if (isLess(key, nownode->key[i])) return search(nownode->slots_child[i-1],key);
-        return search(nownode->slots_child[nownode->nowkey],key);
+        return search(nownode->slots_child[nownode->nowkey-1],key);
     }
     return slot(-1,-1);
 }
@@ -98,7 +102,7 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
     if (nownode->NodeType == _leaf_type){
         if (nownode->nowkey < nownode->maxkey-2){
             int i;
-            for (i=nownode->nowkey; i>=0; i--)
+            for (i=nownode->nowkey-1; i>=0; i--)
                 if (isLess(key,nownode->key[i])){
                     nownode->key[i+1] = nownode->key[i];
                     nownode->slots[i+1] = nownode->slots[i];
@@ -114,7 +118,7 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
             
             
             int i;
-            for (i=nownode->nowkey; i>=0; i--)
+            for (i=nownode->nowkey-1; i>=0; i--)
                 if (isLess(key,nownode->key[i])){
                     nownode->key[i+1] = nownode->key[i];
                     nownode->slots[i+1] = nownode->slots[i];
@@ -122,20 +126,23 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
                 else break;
             nownode->key[i+1] = key;
             nownode->slots[i+1]=keyslot;
+            nownode->nowkey++;
             
             int NewBID_TMP;
             // buffer 给我申请一个可用的block_id
             
             IndexBlock* tmp = new IndexBlock(nownode->IndexName,NewBID_TMP,_leaf_type,nownode->AttrType);
-            int k = (nownode->maxkey%2==0)?0:1;
+            int k = (nownode->maxkey%2==0)?-1:0;
             for (int j=0;j<nownode->maxkey/2;j++){
                 tmp->key[j] = nownode->key[nownode->maxkey/2+j+k];
                 tmp->slots[j] = nownode->slots[nownode->maxkey/2+j+k];
                 nownode->key[nownode->maxkey/2+j+k].resetKey();
                 nownode->slots[nownode->maxkey/2+j+k].reset();
+                nownode->slots_child[nownode->maxkey/2+j+k] = NULL;
             }
             tmp->nowkey = nownode->maxkey/2;
             nownode->nowkey -= nownode->maxkey/2;
+            tmp->split = nownode->split = 0;
             
             int NewBID_TMP_FA;
             // buffer 给我申请一个可用的block_id
@@ -143,7 +150,7 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
             tmpfa->nowkey = 2;
             
             tmpfa->slots_child[0]=nownode;
-            tmpfa->slots_child[1]=tmpfa;
+            tmpfa->slots_child[1]=tmp;
             tmpfa->key[0] = nownode->key[0];
             tmpfa->key[1] = tmp->key[0];
             slot s1(nownode->block_id,-1), s2(tmp->block_id,-1);
@@ -156,8 +163,8 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
     }
     // 判断内部节点
     else {
-        for (int i=1;i<=nownode->nowkey+1;i++){
-            if (isLess(key, nownode->key[i]) || (i==(nownode->nowkey+1))){ // 找个合适的内部节点插入
+        for (int i=1;i<=nownode->nowkey;i++){
+            if (isLess(key, nownode->key[i]) || (i==(nownode->nowkey))){ // 找个合适的内部节点插入
                 if (nownode->slots_child[i-1]->nowkey < nownode->maxkey-2 ){ // 可以有合适的位置插入
                     nownode->slots_child[i-1] = insert(nownode->slots_child[i-1], key, keyslot);
                     nownode->key[i-1] = nownode->slots_child[i-1]->key[0]; // 更新
@@ -215,16 +222,17 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
                                 t2->slots[k-j] = nownode->slots[k];
                                 t2->slots_child[k-j] = nownode->slots_child[k];
                             }
-                            t2->nowkey = k-j;
+                            t2->nowkey = k-j-1;
                             for (int pi=0;pi<nownode->maxkey;pi++){
                                 nownode->slots[pi].reset();
                                 nownode->key[pi].resetKey();
+                                nownode->slots_child[pi] = NULL;
                             }
                             nownode->nowkey = 2;
                             nownode->slots_child[0] = t1;
                             nownode->slots_child[1] = t2;
                             nownode->key[0]=t1->key[0];
-                            nownode->key[1]=t2->key[1];
+                            nownode->key[1]=t2->key[0];
                             slot s1(t1->block_id,-1), s2(t2->block_id,-1);
                             nownode->slots[0] = s1;
                             nownode->slots[1] = s2;
@@ -251,7 +259,7 @@ void BPlusTree::Link_Leaf(){
             link.push_back(cur);
             continue;
         }
-        for (int i=0;i<=cur->nowkey;i++) q.push(cur->slots_child[i]);
+        for (int i=0;i<cur->nowkey;i++) q.push(cur->slots_child[i]);
     }
     for (int i=1;i<link.size();i++){
         link[i-1]->set_last_slot(link[i]);
@@ -290,7 +298,7 @@ std::vector<slot> BPlusTree::Smaller(Value key){
     answer.resize(0);
     while (Leaf != NULL){
         for (int i=0;i<Leaf->nowkey;i++)
-            if (isLess(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
+            if (isLess(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
             else return answer;
         Leaf = Leaf->get_last_slot_child();
     }
@@ -305,7 +313,7 @@ std::vector<slot> BPlusTree::SmallerEqual(Value key){
     answer.resize(0);
     while (Leaf != NULL){
         for (int i=0;i<Leaf->nowkey;i++)
-            if (isLessEqual(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
+            if (isLessEqual(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
             else return answer;
         Leaf = Leaf->get_last_slot_child();
     }
@@ -318,7 +326,7 @@ std::vector<slot> BPlusTree::Bigger(Value key){
     answer.resize(0);
     while (Leaf!=NULL){
         for (int i=0;i<Leaf->nowkey;i++)
-            if (isLess(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
+            if (isLess(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
         Leaf = Leaf->get_last_slot_child();
     }
     return answer;
@@ -330,7 +338,7 @@ std::vector<slot> BPlusTree::BiggerEqual(Value key){
     answer.resize(0);
     while (Leaf!=NULL){
         for (int i=0;i<Leaf->nowkey;i++)
-            if (isLessEqual(Leaf->key[i], key)) answer.push_back(Leaf->slots[i]);
+            if (isLessEqual(key, Leaf->key[i])) answer.push_back(Leaf->slots[i]);
         Leaf = Leaf->get_last_slot_child();
     }
     return answer;
@@ -432,6 +440,7 @@ void BPlusTree::load_BPlusTree(std::string IndexName){
     }
     root = &AllNode[0];
     rebuild(root);
+    Link_Leaf();
 }
 
 

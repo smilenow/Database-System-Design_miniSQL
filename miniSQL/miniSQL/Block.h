@@ -58,8 +58,8 @@ public:
 	
 	bool get_dirty()const{return is_dirty;}
 	void set_dirty(const bool &dirty){is_dirty=dirty;}
-	virtual void calc_head_size();
-    virtual ~Block(){};
+    virtual void calc_head_size(){}
+    virtual ~Block(){}
 };
 
 #endif

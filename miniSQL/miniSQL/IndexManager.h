@@ -22,7 +22,7 @@ public:
     IndexManager(){};
     virtual ~IndexManager(){};
     
-    void CreatIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);
+    void CreateIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);
     void DropIndex(std::string IndexName);
     void _delete(std::string IndexName,Value key);
     void _insert(std::string IndexName,Value key, slot keyslot);

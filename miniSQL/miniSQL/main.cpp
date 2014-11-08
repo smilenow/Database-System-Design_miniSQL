@@ -7,8 +7,8 @@
 //
 
 #include <iostream>
-#include "base.h"
-#include "block.h"
+#include "Base.h"
+#include "Block.h"
 #include "sqlcommand.h"
 #include "IndexManager.h"
 #include "RecordManager.h"

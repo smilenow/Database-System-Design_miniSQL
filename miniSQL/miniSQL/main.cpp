@@ -7,9 +7,20 @@
 //
 
 #include <iostream>
+#include "Base.h"
+#include "Block.h"
+#include "sqlcommand.h"
+#include "API.h"
+#include "BufferManager.h"
+#include "CatalogManager.h"
+#include "RecordManager.h"
+#include "IndexManager.h"
+
+CatalogManager *catalogmanager = new CatalogManager();
+RecordManager *recordmanager = new RecordManager();
+IndexManager *indexmanager = new IndexManager();
+BufferManager *buffermanager = new BufferManager();
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
     return 0;
 }

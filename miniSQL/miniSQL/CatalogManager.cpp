@@ -9,9 +9,9 @@
 #include "CatalogManager.h"
 #include <vector>
 #include <iostream>
-int main(){
-    return 0;
-}
+//int main(){
+//    return 0;
+//}
 
 // std::string getStrEle(AttrCatalogBlock &tblock, int j,int p,int tuple_Len){
 //     std::string str = "";
@@ -74,7 +74,7 @@ std::string getStrEle(std::string ch){
 //    str += "\0";
     return str;
 }
-int getAttrType(std::string tablename,std::string attrname){
+int CatalogManager::getAttrType(std::string tablename,std::string attrname){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     int t = 0,size;
@@ -98,7 +98,7 @@ int getAttrType(std::string tablename,std::string attrname){
     return t;
 }
 ///////////////////
-int getAttrType(std::string tablename, int attrindex){
+int CatalogManager::getAttrType(std::string tablename, int attrindex){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     int t = 0;
@@ -338,7 +338,7 @@ bool CatalogManager::isUnique(std::string tablename, std::string attrname){
     return false;
     
 }
-std::string getAttrName(std::string tablename,int i){
+std::string CatalogManager::getAttrName(std::string tablename,int i){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     int ii=0,size;
@@ -362,7 +362,7 @@ std::string getAttrName(std::string tablename,int i){
     }
     return s2;
 }
-int recordSize(std::string tablename){
+int CatalogManager::recordSize(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
     int size = buffermanager->getTableCatalogBlocksNumber();
@@ -384,7 +384,7 @@ int recordSize(std::string tablename){
     return -1;
     
 }
-bool dropIndex(std::string indexname){
+bool CatalogManager::dropIndex(std::string indexname){
     //indexcatalogblock
     int size = buffermanager->getIndexCatalogBlocksNumber();
     for (int i=0;i<size;i++){
@@ -407,7 +407,7 @@ bool dropIndex(std::string indexname){
     }
     return false;
 }
-std::string getIndexName(std::string tablename,std::string attrname){
+std::string CatalogManager::getIndexName(std::string tablename,std::string attrname){
     //indexcatalogblock
     int size = buffermanager->getIndexCatalogBlocksNumber();
     for (int i=0;i<size;i++){
@@ -434,7 +434,7 @@ std::string getIndexName(std::string tablename,std::string attrname){
     }
     return "Index not found";
 }
-bool dropTable(std::string tablename){
+bool CatalogManager::dropTable(std::string tablename){
     int size;
     int flag1=false,flag2=false,flag3=false;
     //tablecatalogblock
@@ -686,7 +686,7 @@ void CatalogManager::insertIndex(sqlcommand &sql){
 }
 
 
-Table getTable(std::string tablename){
+Table CatalogManager::getTable(std::string tablename){
     Table t;
     std::vector<Attribute> attrlist;
     //tablename,attr#,pkattr,recordlength

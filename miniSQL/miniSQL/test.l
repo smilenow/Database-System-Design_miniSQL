@@ -1,0 +1,95 @@
+%{
+
+extern "C"{
+int yywrap(void);
+int yylex(void);
+
+char input();
+void output(char);
+extern void yyerror(const char *s);
+}
+#include <iostream>
+#include "y.tab.h"
+extern void prompt();
+%}
+
+nondigit	[a-zA-z_]
+letter	[a-zA-Z]
+digit	[0-9]
+whitespace	[ \t\n]
+quota	\'\"
+other	.
+identifier  {nondigit}({nondigit}|{digit})*
+
+%%
+
+"select"	{return SELECT;}
+"insert"	{return INSERT;}
+"create"	{return CREATE;}
+"drop"	{return DROP;}
+"delete"	{return DELETE;}
+"table"	{return TABLE;}
+"index"	{return INDEX;}
+"from"	{return FROM;}
+"where"	{return WHERE;}
+"quit"	{return QUIT;}
+"execfile"	{return EXECFILE;}
+"unique"	{return UNIQUE;}
+"into"	{return INTO;}
+"values"	{return VALUES;}
+"on"	{return ON;}
+"primary"	{return PRIMARY;}
+"key"	{return KEY;}
+"and"	{return ANND;}
+"char"	{return CHAR;}
+"int" 	{return INT;}
+"float"	{return FLOAT;}
+
+"<="	{return LE;}
+">="	{return GE;}
+"<>"	{return NE;}
+[<>=]	{return yytext[0];}
+[ \t]+	{;}
+{identifier}	{yylval.id=yytext;return identifier;}
+
+
+[\n]	{prompt();}
+	
+[-]?{digit}+"."{digit}+	{
+	yylval.flVal=atoi(yytext);
+	int i,flag=0;
+	for(i=0;i<strlen(yytext);i++){
+		if(flag)	yylval.flVal+=(yytext[i]-'0')/10.0;
+		if(yytext[i]=='.') flag=1;
+	}
+	return fnum;
+}
+[-]?{digit}+	{yylval.intVal=atoi(yytext);return intnum;}
+[-+*/;(),.\\]	{return yytext[0];}
+{letter}+"."{letter}+ {
+		yylval.strVal=(char *)malloc(strlen(yytext)*sizeof(char));
+		strcpy(yylval.strVal,yytext);
+		return FILENAME;
+	}
+
+('[^\'\n]*')|("[^\'\n]*")	{
+	std::string s = yytext,ss;
+	ss=s.substr(1,s.length()-2);
+	yylval.strVal=(char *)malloc(s.length()*sizeof(char));
+	strcpy(yylval.strVal,ss.c_str());
+	//printf("s=%s\n",ss.c_str());
+	return STRING;
+}
+'[^\'\n]*$	{yyerror("Unterminated string"); }
+\"[^\"\n]*$	{yyerror("Unterminated string"); }
+
+.	{yyerror("Invalid character");}
+
+
+%%
+
+int yywrap(void)
+{
+        return 1;
+}
+

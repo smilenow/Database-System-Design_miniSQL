@@ -42,7 +42,7 @@ public:
 
 class CatalogManager{
 public:
-	std::string getAttrName(std::string tablename,int i);
+	std::string getAttrName(int i);
 	bool dropTable(std::string tablename);
 	bool dropIndex(std::string indexname);
 	std::string getIndexName(std::string tablename, std::string attrname);

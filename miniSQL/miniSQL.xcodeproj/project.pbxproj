@@ -14,6 +14,7 @@
 		5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */; };
 		5F3A83301A0F627200CDE9E3 /* IndexManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */; };
 		5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */; };
+		5F73E7EC1A0F7F0B006094A7 /* CatalogManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F73E7EA1A0F7F0B006094A7 /* CatalogManager.cpp */; };
 		5FCF62671A0F72D400D7F845 /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5FCF62661A0F72D400D7F845 /* Block.cpp */; };
 /* End PBXBuildFile section */
 
@@ -41,12 +42,13 @@
 		5F3A83231A0F627200CDE9E3 /* BPlusTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BPlusTree.h; sourceTree = "<group>"; };
 		5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BufferManager.cpp; sourceTree = "<group>"; };
 		5F3A83251A0F627200CDE9E3 /* BufferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferManager.h; sourceTree = "<group>"; };
-		5F3A83261A0F627200CDE9E3 /* CatalogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CatalogManager.h; sourceTree = "<group>"; };
 		5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndexManager.cpp; sourceTree = "<group>"; };
 		5F3A83281A0F627200CDE9E3 /* IndexManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexManager.h; sourceTree = "<group>"; };
 		5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordManager.cpp; sourceTree = "<group>"; };
 		5F3A832A1A0F627200CDE9E3 /* RecordManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordManager.h; sourceTree = "<group>"; };
 		5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlcommand.h; sourceTree = "<group>"; };
+		5F73E7EA1A0F7F0B006094A7 /* CatalogManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CatalogManager.cpp; sourceTree = "<group>"; };
+		5F73E7EB1A0F7F0B006094A7 /* CatalogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CatalogManager.h; sourceTree = "<group>"; };
 		5FCF62661A0F72D400D7F845 /* Block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Block.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,7 +92,8 @@
 				5F3A831E1A0F627200CDE9E3 /* API.h */,
 				5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */,
 				5F3A83251A0F627200CDE9E3 /* BufferManager.h */,
-				5F3A83261A0F627200CDE9E3 /* CatalogManager.h */,
+				5F73E7EA1A0F7F0B006094A7 /* CatalogManager.cpp */,
+				5F73E7EB1A0F7F0B006094A7 /* CatalogManager.h */,
 				5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */,
 				5F3A83231A0F627200CDE9E3 /* BPlusTree.h */,
 				5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */,
@@ -158,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F3A83301A0F627200CDE9E3 /* IndexManager.cpp in Sources */,
+				5F73E7EC1A0F7F0B006094A7 /* CatalogManager.cpp in Sources */,
 				5F3A832E1A0F627200CDE9E3 /* BPlusTree.cpp in Sources */,
 				5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */,
 				5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */,

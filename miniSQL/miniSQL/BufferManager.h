@@ -44,18 +44,18 @@ public:
 	int get_block_number(int type, std::string fname);
 
     // for catalog manager
-    int getTableCatalogNumbers();
-    int getAttrCatalogNumbers();
-    int getIndexCatalogNumbers();
+    int getTableCatalogBlocksNumber();
+    int getAttrCatalogBlocksNumber();
+    int getIndexCatalogBlocksNumber();
     TableCatalogBlock getTableCatalogBlocks(int block_id);
     AttrCatalogBlock getAttrCatalogBlocks(int block_id);
     IndexCatalogBlock getIndexCatalogBlocks(int block_id);
     void storeTableCatalogBlocks(int block_id, TableCatalogBlock& nowblock);
     void storeAttrCatalogBlocks(int block_id, AttrCatalogBlock& nowblock);
     void storeIndexCatalogBlocks(int block_id, IndexCatalogBlock& nowblock);
-    TableCatalogBlock newTableCatalogBlocks(int block_id);
-    AttrCatalogBlock newAttrCatalogBlocks(int block_id);
-    IndexCatalogBlock newIndexCatalogBlocks(int block_id);
+    TableCatalogBlock newTableCatalogBlocks();
+    AttrCatalogBlock newAttrCatalogBlocks();
+    IndexCatalogBlock newIndexCatalogBlocks();
 
 	std::vector<IndexBlock> load_tree(std::string indexname);
 	bool store_tree(std::string indexname, std::vector<IndexBlock>& tree);

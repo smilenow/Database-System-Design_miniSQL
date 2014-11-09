@@ -523,13 +523,13 @@ bool BufferManager::delete_tree(std::string indexname){
 	// 析构B+树
 }
 
-int BufferManager::getTableCatalogNumbers(){
+int BufferManager::getTableCatalogBlocksNumber(){
     return get_block_number(TCB, "tablecatalogblock");
 }
-int BufferManager::getAttrCatalogNumbers(){
+int BufferManager::getAttrCatalogBlocksNumber(){
     return get_block_number(ACB, "attrcatalogblock");
 }
-int BufferManager::getIndexCatalogNumbers(){
+int BufferManager::getIndexCatalogBlocksNumber(){
     return get_block_number(ICB, "indexcatalogblock");
 }
 TableCatalogBlock BufferManager::getTableCatalogBlocks(int block_id){
@@ -550,13 +550,13 @@ void BufferManager::storeAttrCatalogBlocks(int block_id, AttrCatalogBlock& nowbl
 void BufferManager::storeIndexCatalogBlocks(int block_id, IndexCatalogBlock& nowblock){
     storeBlock("indexcatalogblock", &nowblock);
 }
-TableCatalogBlock BufferManager::newTableCatalogBlocks(int block_id){
+TableCatalogBlock BufferManager::newTableCatalogBlocks(){
     return *(dynamic_cast<TableCatalogBlock *>(newBlock(TCB, "tablecatalogblock")));
 }
-AttrCatalogBlock BufferManager::newAttrCatalogBlocks(int block_id){
+AttrCatalogBlock BufferManager::newAttrCatalogBlocks(){
     return *(dynamic_cast<AttrCatalogBlock *>(newBlock(ACB, "attrcatalogblock")));
 }
-IndexCatalogBlock BufferManager::newIndexCatalogBlocks(int block_id){
+IndexCatalogBlock BufferManager::newIndexCatalogBlocks(){
     return *(dynamic_cast<IndexCatalogBlock *>(newBlock(ICB, "indexcatalogblock")));
 }
 

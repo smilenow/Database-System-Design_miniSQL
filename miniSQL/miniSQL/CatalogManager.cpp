@@ -9,69 +9,16 @@
 #include "CatalogManager.h"
 #include <vector>
 #include <iostream>
-//int main(){
-//    return 0;
-//}
 
-// std::string getStrEle(AttrCatalogBlock &tblock, int j,int p,int tuple_Len){
-//     std::string str = "";
-//     char ch[namesize];
-//     memcpy(ch, tblock.content+j*tuple_Len+p, namesize*sizeof(char));
-//     //p += namesize*sizeof(char);
-
-//     // 去掉补全的\0
-//     int pos = 0;
-//     while (ch[pos]!='\0'){
-//         pos++;
-//         if (pos >= namesize) break;
-//     }
-//     for (int j=pos;j<namesize;j++) str += ch[j];
-//     str += "\0";
-//     return str;
-// }
-
-// std::string getStrEle(IndexCatalogBlock &tblock, int j,int p,int tuple_Len){
-//     std::string str = "";
-//     char ch[namesize];
-//     memcpy(ch, tblock.content+j*tuple_Len+p, namesize*sizeof(char));
-//     //p += namesize*sizeof(char);
-
-//     // 去掉补全的\0
-//     int pos = 0;
-//     while (ch[pos]!='\0'){
-//         pos++;
-//         if (pos >= namesize) break;
-//     }
-//     for (int j=pos;j<namesize;j++) str += ch[j];
-//     str += "\0";
-//     return str;
-// }
-
-// std::string getStrEle(TableCatalogBlock &tblock, int j,int p,int tuple_Len){
-//     std::string str = "";
-//     char ch[namesize];
-//     memcpy(ch, tblock.content+j*tuple_Len+p, namesize*sizeof(char));
-//     //p += namesize*sizeof(char);
-
-//     // 去掉补全的\0
-//     int pos = 0;
-//     while (ch[pos]!='\0'){
-//         pos++;
-//         if (pos >= namesize) break;
-//     }
-//     for (int j=pos;j<namesize;j++) str += ch[j];
-//     str += "\0";
-//     return str;
-// }
 std::string getStrEle(std::string ch){
-    //int pos = 0;
+    int pos = 0;
     std::string str="";
-//    while (ch[pos]!='\0'){
-//        pos++;
-//        if (pos >= namesize) break;
-//    }
-//    for (int j=pos;j<namesize;j++) str += ch[j];
-//    str += "\0";
+   while (ch[pos]!='\0'){
+       pos++;
+       if (pos >= namesize) break;
+   }
+   for (int j=pos;j<namesize;j++) str += ch[j];
+   str += "\0";
     return str;
 }
 int CatalogManager::getAttrType(std::string tablename,std::string attrname){

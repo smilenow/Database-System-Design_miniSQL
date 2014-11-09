@@ -84,11 +84,7 @@ public:
     int split;                  // 判断是否有分裂
 public:
     IndexBlock():Block(),nowkey(0){ clr(); };
-    IndexBlock(std::string IndexName,int NodeType);
-    IndexBlock(std::string IndexName,int NodeType,int AttrType);
-    //这两个tag是因为Ctor不能接受同样的parameter来构造，和上述的会混淆
-    IndexBlock(std::string IndexName,int block_id,int NodeType,int tag);
-    IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int tag);
+    IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType);
     
     // 析构的时候要把信息写回buffer
     ~IndexBlock();

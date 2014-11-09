@@ -16,17 +16,7 @@ void IndexBlock::init(){
     init_key_slots();
 };
 
-IndexBlock::IndexBlock(std::string IndexName,int NodeType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),split(0){ init(); };
-
-IndexBlock::IndexBlock(std::string IndexName,int NodeType,int AttrType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
-    init();
-};
-
-IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),split(0){
-    init();
-};
-
-IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
+IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
     init();
 };
 

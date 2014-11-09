@@ -14,7 +14,10 @@ void IndexManager::CreateIndex(std::string IndexName,int IndexType,std::vector<V
 }
 
 void IndexManager::DropIndex(std::string IndexName){
-    CurrentBPT.delete_whole_tree(CurrentBPT.root);
+//    CurrentBPT.delete_whole_tree(CurrentBPT.root);
+    BufferManager *bm = new BufferManager();
+    bm->delete_tree(IndexName);
+    delete bm;
 }
 
 slot IndexManager::select(std::string IndexName,Value key){

@@ -282,7 +282,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                     num++;
                 }
             }
-            buffermanager->storeBlock(TableName,*nowblock);
+            buffermanager->storeBlock(TableName,nowblock);
         }
     }
     else {
@@ -301,7 +301,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                         successful = true;
                     }
                 }
-            buffermanager->storeBlock(TableName,*nowblock);
+            buffermanager->storeBlock(TableName,nowblock);
         }
     }
     
@@ -335,7 +335,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
                     nowblock->content[j*tupleLen]=used;
                     nowblock->is_dirty = true;
                     nowblock->nowcontentsize += tupleLen;
-                    buffermanager->storeBlock(TableName,*nowblock);
+                    buffermanager->storeBlock(TableName,nowblock);
                     block_id = i;
                     record_id = j;
                     return nowrinfo;
@@ -355,7 +355,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
         nowblock->content[0] = used;
         block_id = i;
         record_id = 0;
-        buffermanager->storeBlock(TableName,*nowblock);
+        buffermanager->storeBlock(TableName,nowblock);
         return nowrinfo;
     }
     

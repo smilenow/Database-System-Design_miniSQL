@@ -78,9 +78,9 @@ int getAttrType(std::string tablename,std::string attrname){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     int t = 0,size;
-    size = getAttrCatalogBlocksNumber();
+    size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -102,9 +102,9 @@ int getAttrType(std::string tablename, int attrindex){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     int t = 0;
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -125,9 +125,9 @@ std::vector<int> CatalogManager::getAllAttrType(std::string tablename){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     std::vector<int> type;
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -147,10 +147,10 @@ std::vector<int> CatalogManager::getAllAttrType(std::string tablename){
 int CatalogManager::AttrCount(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     //std::vector<int> blocks = getTableCatalogBlocks();
     for(int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);//???
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -168,10 +168,10 @@ int CatalogManager::AttrCount(std::string tablename){
 bool CatalogManager::TableExists(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     //std::vector<int> blocks = getTableCatalogBlocks();
     for(int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);//???
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -187,9 +187,9 @@ bool CatalogManager::TableExists(std::string tablename){
 bool CatalogManager::IndexExists(std::string indexname){
     int tupleLen = namesize*sizeof(char)*3;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
-    int size = getIndexCatalogBlocksNumber();
+    int size = buffermanager->getIndexCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);//???
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -209,9 +209,9 @@ bool CatalogManager::AttrExists(std::string attrname,std::string tablename){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -232,9 +232,9 @@ bool CatalogManager::AttrExists(std::string attrname,std::string tablename){
 bool CatalogManager::hasIndex(std::string tablename, std::string attrname){
     int tupleLen = namesize*sizeof(char)*3;
     int blockLen = (contentsize) / tupleLen;
-    int size = getIndexCatalogBlocksNumber();
+    int size = buffermanager->getIndexCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);//???
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 //std string::s1=getStrEle(nowblock,j,1,tupleLen);
@@ -261,9 +261,9 @@ bool CatalogManager::isPK(std::string tablename, int attrindex){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -287,9 +287,9 @@ bool CatalogManager::isUnique(std::string tablename, int attrindex){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -314,9 +314,9 @@ bool CatalogManager::isUnique(std::string tablename, std::string attrname){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
     
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -343,9 +343,9 @@ std::string getAttrName(std::string tablename,int i){
     int blockLen = (contentsize) / tupleLen;
     int ii=0,size;
     std::string s2;
-    size = getAttrCatalogBlocksNumber();
+    size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -365,10 +365,10 @@ std::string getAttrName(std::string tablename,int i){
 int recordSize(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     //std::vector<int> blocks = getTableCatalogBlocks();
     for(int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);//???
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -386,9 +386,9 @@ int recordSize(std::string tablename){
 }
 bool dropIndex(std::string indexname){
     //indexcatalogblock
-    int size = getIndexCatalogBlocksNumber();
+    int size = buffermanager->getIndexCatalogBlocksNumber();
     for (int i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);
         int tupleLen = namesize*sizeof(char)*3;
         int blockLen = (contentsize) / tupleLen;
         for (int j=0;j<blockLen;j++)
@@ -409,9 +409,9 @@ bool dropIndex(std::string indexname){
 }
 std::string getIndexName(std::string tablename,std::string attrname){
     //indexcatalogblock
-    int size = getIndexCatalogBlocksNumber();
+    int size = buffermanager->getIndexCatalogBlocksNumber();
     for (int i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);
         int tupleLen = namesize*sizeof(char)*3;
         int blockLen = (contentsize) / tupleLen;
         for (int j=0;j<blockLen;j++)
@@ -438,9 +438,9 @@ bool dropTable(std::string tablename){
     int size;
     int flag1=false,flag2=false,flag3=false;
     //tablecatalogblock
-    size = getTableCatalogBlocksNumber();
+    size = buffermanager->getTableCatalogBlocksNumber();
     for (int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);
         int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
         int blockLen = (contentsize) / tupleLen;
         for (int j=0;j<blockLen;j++)
@@ -458,9 +458,9 @@ bool dropTable(std::string tablename){
         //storeTableCatalogBlocks(i,nowblock);
     }
     //attrcatalogblock
-    size = getAttrCatalogBlocksNumber();
+    size = buffermanager->getAttrCatalogBlocksNumber();
     for (int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);
         int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
         int blockLen = (contentsize) / tupleLen;
         for (int j=0;j<blockLen;j++)
@@ -478,9 +478,9 @@ bool dropTable(std::string tablename){
         //storeAttrCatalogBlocks(i,nowblock);
     }
     //indexcatalogblock
-    size = getIndexCatalogBlocksNumber();
+    size = buffermanager->getIndexCatalogBlocksNumber();
     for (int i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);
         int tupleLen = namesize*sizeof(char)*3;
         int blockLen = (contentsize) / tupleLen;
         for (int j=0;j<blockLen;j++)
@@ -503,9 +503,9 @@ std::string CatalogManager::pkOnTable(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
     
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);//???
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -557,10 +557,10 @@ void CatalogManager::insertTable(sqlcommand &sql){
     //int tupleLen = namesize*sizeof(char)+num*(sizeof(int)+sizeof(char)*namesize);
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     int i;
     for(i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);//???
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++){
             if(nowblock.content[j*tupleLen]==Unused){
                 // if(tablename.length()<namesize)
@@ -579,7 +579,7 @@ void CatalogManager::insertTable(sqlcommand &sql){
         }
     }
     
-    TableCatalogBlock nowblock = newTableCatalogBlocks();
+    TableCatalogBlock nowblock = buffermanager->newTableCatalogBlocks();
     memcpy(nowblock.content+1, tablename.c_str(), sizeof(char)*namesize);
     memcpy(nowblock.content+1+sizeof(char)*namesize,&num,sizeof(int));
     memcpy(nowblock.content+1+sizeof(char)*namesize, pkattr.c_str(), sizeof(char)*namesize);
@@ -597,10 +597,10 @@ void CatalogManager::insertAttr(std::string tablename,std::string attrn,std::str
     
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     int blockLen = (contentsize) / tupleLen;
-    int size = getAttrCatalogBlocksNumber();
+    int size = buffermanager->getAttrCatalogBlocksNumber();
     int i;
     for(i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);//???
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++){
             if(nowblock.content[j*tupleLen]==Unused){
                 int tmp1=atoi(attrp.c_str());
@@ -620,7 +620,7 @@ void CatalogManager::insertAttr(std::string tablename,std::string attrn,std::str
         }
     }
     
-    AttrCatalogBlock nowblock = newAttrCatalogBlocks();
+    AttrCatalogBlock nowblock = buffermanager->newAttrCatalogBlocks();
     int tmp1=atoi(attrp.c_str());
     int tmp2=atoi(attrt.c_str());
     memcpy(nowblock.content+1, tablename.c_str(), sizeof(char)*namesize);
@@ -656,10 +656,10 @@ void CatalogManager::insertIndex(sqlcommand &sql){
     int tupleLen = namesize*sizeof(char)*3;
     int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
     
-    int size = getIndexCatalogBlocksNumber();
+    int size = buffermanager->getIndexCatalogBlocksNumber();
     int i;
     for(i=0;i<size;i++){
-        IndexCatalogBlock nowblock = getIndexCatalogBlocks(i);//???
+        IndexCatalogBlock nowblock = buffermanager->getIndexCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++){
             if(nowblock.content[j*tupleLen]==Unused){
                 memcpy(nowblock.content+j*tupleLen+1, indexn.c_str(), sizeof(char)*namesize);
@@ -674,7 +674,7 @@ void CatalogManager::insertIndex(sqlcommand &sql){
         }
     }
     
-    IndexCatalogBlock nowblock = newIndexCatalogBlocks();
+    IndexCatalogBlock nowblock = buffermanager->newIndexCatalogBlocks();
     memcpy(nowblock.content+1, indexn.c_str(), sizeof(char)*namesize);
     memcpy(nowblock.content+1+sizeof(char)*namesize, tablen.c_str(), sizeof(char)*namesize);
     memcpy(nowblock.content+1+sizeof(char)*namesize*2, attrn.c_str(),sizeof(char)*namesize);
@@ -693,9 +693,9 @@ Table getTable(std::string tablename){
     t.name=tablename;
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2;
     int blockLen = (contentsize) / tupleLen;
-    int size = getTableCatalogBlocksNumber();
+    int size = buffermanager->getTableCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        TableCatalogBlock nowblock = getTableCatalogBlocks(i);
+        TableCatalogBlock nowblock = buffermanager->getTableCatalogBlocks(i);
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;
@@ -715,9 +715,9 @@ Table getTable(std::string tablename){
     tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3;
     blockLen = (contentsize) / tupleLen;
     int ii=0;
-    size = getAttrCatalogBlocksNumber();
+    size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
-        AttrCatalogBlock nowblock = getAttrCatalogBlocks(i);
+        AttrCatalogBlock nowblock = buffermanager->getAttrCatalogBlocks(i);
         for(int j=0;j<blockLen;j++)
             if (nowblock.content[j*tupleLen]==used){
                 std::string s1;

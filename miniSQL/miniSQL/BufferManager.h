@@ -32,7 +32,7 @@ public:
 		write_all();
 	}
 
-	Block* newBlock(int type, std::string tablename);
+	Block* newBlock(int type, std::string tablename, int NodeType=-100, int AttrType=-100);
 	// todo: catalog_block分开
 	// 读block可不分开，但是必须要指明是哪个manager
 	// 返回后需要dynamic_cast

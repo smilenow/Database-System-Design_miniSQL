@@ -435,7 +435,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 
 // 多加一个new block for index
 // 同getBlock/loadBlock
-Block* BufferManager::newBlock(int type, std::string tablename){
+Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, int AttrType){
 	int bid;
 //	if(type==IB) tablename=tablename+"$"+indexname;
 	bid=get_block_number(type, tablename);
@@ -447,7 +447,7 @@ Block* BufferManager::newBlock(int type, std::string tablename){
 		buffer[block_n]=new RecordBlock();
 		break;
 		case IB:
-		buffer[block_n]=new IndexBlock();
+		buffer[block_n]=new IndexBlock(tablename,bid,NodeType,AttrType);
 		break;
 		case TCB:
 		buffer[block_n]=new TableCatalogBlock();

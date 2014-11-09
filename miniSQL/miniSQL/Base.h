@@ -6,12 +6,20 @@
 //  Copyright (c) 2014 Jiaquan Yin. All rights reserved.
 //
 
+// V2.0: Add AND(), append() methods for Resultinfo & Result & Row, by Xinyuan Lu
+// Now they can perform some logical operation
+// In fact, the core code of select/delete of API are now in this file
+
+// v2.1, delete unused attribute, by Xinyuan Lu
+
 #ifndef miniSQL_base_h
 #define miniSQL_base_h
 
 #include <string>
 #include <vector>
 #include <sstream>
+
+#include <algorithm>
 
 #define block_size  4096
 #define max_block   1000
@@ -44,19 +52,19 @@ public:
     Table(){};
     Table(const Table& that){
         name = that.name;
-        dname = that.dname;
-        AttrNum = that.AttrNum;
+        // dname = that.dname;
+        // AttrNum = that.AttrNum;
         RecordLength = that.RecordLength;
-        RecordNum = that.RecordNum;
-        size = that.size;
+        // RecordNum = that.RecordNum;
+        // size = that.size;
     };
     
     std::string name;       // 表名称
-    std::string dname;      // 隶属于哪个数据库
-    int AttrNum;            // 属性数量
+    // std::string dname;      // 隶属于哪个数据库
+    // int AttrNum;            // 属性数量
     int RecordLength;       // 一个记录的长度
-    int RecordNum;          // 记录的数量
-    int size;               // 这个表的大小/长度
+    // int RecordNum;          // 记录的数量
+    // int size;               // 这个表的大小/长度
     std::vector<Attribute> AttrList;    // 属性列表
 };
 
@@ -74,10 +82,29 @@ class Row{
 public:
     std::vector<std::string> cols; // columns
 };
+
 class Result{
 public:
     std::vector<Row> rows;  // rows
+    void append(Result r){
+        for(int i=0; i<r.rows.size();i++)
+            rows.push_back(r.rows.at(i));
+    }
+    void AND(Result r){
+        for(std::vector<Row>::iterator i=rows.begin(); i<rows.end(); i++){
+            bool flag=false;
+            for(std::vector<Row>::iterator j=r.rows.begin(); j<r.rows.end(); j++){
+                if(std::equal((*i).cols.begin(), (*i).cols.end(), (*i).cols.begin())){
+                    flag=true;
+                    break;
+                }
+            }
+            if(flag==false)
+                rows.erase(i);
+        }
+    }
 };
+
 class indexinfo{
 };
 //
@@ -89,6 +116,30 @@ public:
     std::string getMessage() { return message; };
     Result getRes() { return res; };
     long getNum(){ return num; };
+    
+    void append(Recordinfo r){
+        res.append(r.res);
+        successful|=r.successful;
+        num+=r.num;
+        if(successful==false) message=message+" & "+r.message;
+    }
+    void AND(Recordinfo r){
+        // first check
+        if(!successful) return ;
+        if(r.successful==false){
+            message=message+" & "+r.message;
+            successful=false;
+            num=0;
+            return ;
+        }
+        if(r.successful&&successful)
+            res.AND(r.res);
+        num=res.rows.size();
+        if(num==0){
+            message="Cannot find any tuple by intersection!";
+            successful=false;
+        }
+    }
     
 private:
     bool successful;    // 是否正确执行,获取对应的record

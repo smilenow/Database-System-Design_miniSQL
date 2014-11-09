@@ -14,18 +14,9 @@
 #include <string>
 #include <vector>
 #include <map>
-
-extern class DataBlock;
-extern class IndexBlock;
-extern class TableCatalogBlock;
-extern class IndexCatalogBlock;
-extern class AttributeCatalogBlock;
-
-// #include "DataBlock.h"
-// #include "IndexBlock.h"
-// #include "IndexCatalogBlock.h"
-// #include "TableCatalogBlock.h"
-// #include "AttributeCatalogBlock.h"
+#include "IndexManager.h"
+#include "RecordManager.h"
+#include "CatalogManager.h"
 
 #define Buffer_Capacity 32768
 
@@ -60,7 +51,7 @@ public:
 	bool delete_tree(std::string indexname);
 
 public:
-	bool write_datablock(int block_n);
+	bool write_recordblock(int block_n);
 	bool write_catalogblock(int block_n);
 	bool write_indexblock(int block_n);
 

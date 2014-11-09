@@ -6,6 +6,11 @@
 //  Copyright (c) 2014 Xinyuan Lu. All rights reserved.
 //
 
+// v2.0, re-rewrite and re-name interfaces, by Xinyuan Lu
+
+// v3.0, modify how to write, also modify interfaces, according to
+// other 3 managers, by Xinyuan Lu
+
 // 每次修改都要置dirty、reference
 
 #include <stdio.h>
@@ -49,15 +54,15 @@ bool BufferManager::is_full(){
 
 // 得到block类型
 int BufferManager::find_type(Block *block){
-	if(dynamic_cast<DataBlock>(block))
+	if(dynamic_cast<RecordBlock*>(block))
 		return DB;
-	if(dynamic_cast<IndexBlock>(block))
+	if(dynamic_cast<IndexBlock*>(block))
 		return IB;
-	if(dynamic_cast<IndexCatalogBlock>(block))
+	if(dynamic_cast<IndexCatalogBlock*>(block))
 		return ICB;
-	if(dynamic_cast<TableCatalogBlock>(block))
+	if(dynamic_cast<TableCatalogBlock*>(block))
 		return TCB;
-	if(dynamic_cast<AttributeCatalogBlock>(block))
+	if(dynamic_cast<AttrCatalogBlock*>(block))
 		return ACB;
 	return 0;
 }
@@ -115,7 +120,7 @@ void BufferManager::unpin_block(int block_n){
 
 // 下面三个可以合并成一个，但尚不确定
 // 这三个write会erase filename, clear is_dirty, 并且delete指针, 其他不动
-bool BufferManager::write_datablock(int block_n){
+bool BufferManager::write_recordblock(int block_n){
 	int fd;
 	char fullname[2*max_name_length];
     std::map<int, std::string>::iterator it;
@@ -187,7 +192,7 @@ int BufferManager::write_block(){
 				
 				switch(type){
 					case DB:
-					if(write_datablock(reference_bit_count)==false)
+					if(write_recordblock(reference_bit_count)==false)
 						assert(0);
 					break;
 					case IB:
@@ -234,7 +239,7 @@ void BufferManager::write_all(){
 
 			switch(type){
 				case DB:
-				if(write_datablock(i)==false)
+				if(write_recordblock(i)==false)
 					assert(0);
 				break;
 				case IB:
@@ -261,7 +266,7 @@ bool BufferManager::storeBlock(std::string tablename, Block *block){
 	int type=find_type(buffer[i]);
 	switch(type){
 		case DB:
-		if(write_datablock(i)==0) assert(0);
+		if(write_recordblock(i)==0) assert(0);
 		break;
 		case IB:
 		if(write_indexblock(i)==0) assert(0);
@@ -277,7 +282,7 @@ bool BufferManager::storeBlock(std::string tablename, Block *block){
 
 // get the number of blocks in a table/index
 // if the file doens't exist, will create one
-int get_block_number(int type, std::string fname){
+int BufferManager::get_block_number(int type, std::string fname){
 	char filename[3*max_name_length];
 	int fd;
 	off_t offset;
@@ -295,7 +300,7 @@ int get_block_number(int type, std::string fname){
 		strcpy(filename, "~/dsd/catalog/");
 		strcat(filename, fname.c_str());
 	}
-	if((fd=open(filename, O_RDWR|O_APPEND, 777))<0)
+	if((fd=open(filename, O_RDWR|O_APPEND|O_CREAT, 777))<0)
 		assert(0);
 	offset=lseek(fd, 0, SEEK_END);
 	if(offset==0) return 0;
@@ -308,7 +313,7 @@ int get_block_number(int type, std::string fname){
 // buffer为它开辟block的时候会载入之前的信息bit，更新三个is_* bit
 // block_number++
 // 有冗余，需要优化
-void load_block(int block_n, int type, std::string tablename, int bid, std::string indexname){
+void BufferManager::load_block(int block_n, int type, std::string tablename, int bid, std::string indexname){
 	int fd;
 	char fullname[3*max_name_length];
 	off_t offset=bid*block_size;
@@ -335,7 +340,7 @@ void load_block(int block_n, int type, std::string tablename, int bid, std::stri
 	switch(type){
 		// 这里真的有必要这样写吗？
 		case DB:
-		buffer[block_n]=new DataBlock();
+		buffer[block_n]=new RecordBlock();
 		break;
 		case IB:
 		buffer[block_n]=new IndexBlock();
@@ -347,7 +352,7 @@ void load_block(int block_n, int type, std::string tablename, int bid, std::stri
 		buffer[block_n]=new IndexCatalogBlock();
 		break;
 		case ACB:
-		buffer[block_n]=new AttributeCatalogBlock();
+		buffer[block_n]=new AttrCatalogBlock();
 		break;
 	}
 	lseek(fd, offset, SEEK_SET);
@@ -371,7 +376,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 	if(type==DB){
 		for(int i; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==DB){
-				std::map::iterator it;
+                std::map<int, std::string>::iterator it;
 				it=filename.find(i);
 				if(tablename==it->second && buffer[i]->block_id==bid){
 					reference_bit[i]=true;
@@ -385,7 +390,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 		tablename=tablename+"$"+indexname;
 		for(int i; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==IB){
-				std::map::iterator it;
+                std::map<int, std::string>::iterator it;
 				it=filename.find(i);
 				if(tablename==it->second && buffer[i]->block_id==bid){
 					reference_bit[i]=true;
@@ -397,9 +402,9 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 	else{
 		for(int i; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==TCB || find_type(buffer[i])==ICB || find_type(buffer[i])==ACB){
-				std::map::iterator it;
+				std::map<int, std::string>::iterator it;
 				it=filename.find(i);
-				if(tablname==it->second && buffer[i]->block_id==bid){
+				if(tablename==it->second && buffer[i]->block_id==bid){
 					reference_bit[i]=true;
 					return buffer[i];
 				}
@@ -410,15 +415,15 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 	int block_n;
 	block_n=get_available_block();
 	if(type==DB){
-		load_block(block_n, type, tablname, bid, indexname);
+		load_block(block_n, type, tablename, bid, indexname);
 	}
-	else if(type=TCB || type=ICB || type=ACB){
-		load_block(block_n, type, tablname, bid, indexname);
+	else if(type==TCB || type==ICB || type==ACB){
+		load_block(block_n, type, tablename, bid, indexname);
 		pin_block(block_n);
 	}
 	else if(type==IB){
 		// pin?
-		load_block(block_n, type, tablname, bid, indexname);
+		load_block(block_n, type, tablename, bid, indexname);
 	}
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
 	return buffer[block_n];
@@ -434,7 +439,7 @@ Block* BufferManager::newBlock(int type, std::string tablename, std::string inde
 	switch(type){
 		// 这里真的有必要这样写吗？
 		case DB:
-		buffer[block_n]=new DataBlock();
+		buffer[block_n]=new RecordBlock();
 		break;
 		case IB:
 		buffer[block_n]=new IndexBlock();
@@ -448,7 +453,7 @@ Block* BufferManager::newBlock(int type, std::string tablename, std::string inde
 		pin_bit[block_n]=true;
 		break;
 		case ACB:
-		buffer[block_n]=new AttributeCatalogBlock();
+		buffer[block_n]=new AttrCatalogBlock();
 		pin_bit[block_n]=true;
 		break;
 	}
@@ -476,8 +481,8 @@ std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
 	strcat(fullname, indexname.c_str());
 	fd=open(fullname, O_RDONLY);
 	IndexBlock* i=new IndexBlock();	// 可能要用指针？
-	for(int i=0; i<n; i++){
-		read(fd, i, block_size);
+	for(int j=0; j<n; i++){
+		read(fd, (void*)i, block_size);
 		tree.push_back(*i);
 		delete i;
 	}
@@ -495,10 +500,10 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& t
 	strcat(fullname, indexname.c_str());
 	fd=open(fullname, O_WRONLY);
 	// IndexBlock* ib;	// 可能要用指针？
-	for(std::vector<IndexBlock>::iterator i=tree.begin(); i!=tree.end(); i++){
-		// ib=new IndexBlock(*i);
-		write(fd, i, block_size);
-		// delete ib;
+	for(std::vector<IndexBlock>::iterator j=tree.begin(); j!=tree.end(); j++){
+		IndexBlock* ib=new IndexBlock();
+		write(fd, (void*)ib, block_size);
+        delete ib;
 	}
 	close(fd);
 	return true;

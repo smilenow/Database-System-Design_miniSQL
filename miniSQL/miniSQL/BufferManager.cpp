@@ -523,4 +523,41 @@ bool BufferManager::delete_tree(std::string indexname){
 	// 析构B+树
 }
 
+int BufferManager::getTableCatalogNumbers(){
+    return get_block_number(TCB, "tablecatalogblock");
+}
+int BufferManager::getAttrCatalogNumbers(){
+    return get_block_number(ACB, "attrcatalogblock");
+}
+int BufferManager::getIndexCatalogNumbers(){
+    return get_block_number(ICB, "indexcatalogblock");
+}
+TableCatalogBlock BufferManager::getTableCatalogBlocks(int block_id){
+    return *(dynamic_cast<TableCatalogBlock *>(getBlock(TCB, "tablecatalogblock", block_id)));
+}
+AttrCatalogBlock BufferManager::getAttrCatalogBlocks(int block_id){
+    return *(dynamic_cast<AttrCatalogBlock *>(getBlock(ACB, "attrcatalogblock", block_id)));
+}
+IndexCatalogBlock BufferManager::getIndexCatalogBlocks(int block_id){
+    return *(dynamic_cast<IndexCatalogBlock *>(getBlock(ICB, "indexcatalogblock", block_id)));
+}
+void BufferManager::storeTableCatalogBlocks(int block_id, TableCatalogBlock& nowblock){
+    storeBlock("tablecatalogblock", &nowblock);
+}
+void BufferManager::storeAttrCatalogBlocks(int block_id, AttrCatalogBlock& nowblock){
+    storeBlock("attrcatalogblock", &nowblock);
+}
+void BufferManager::storeIndexCatalogBlocks(int block_id, IndexCatalogBlock& nowblock){
+    storeBlock("indexcatalogblock", &nowblock);
+}
+TableCatalogBlock BufferManager::newTableCatalogBlocks(int block_id){
+    return *(dynamic_cast<TableCatalogBlock *>(newBlock(TCB, "tablecatalogblock")));
+}
+AttrCatalogBlock BufferManager::newAttrCatalogBlocks(int block_id){
+    return *(dynamic_cast<AttrCatalogBlock *>(newBlock(ACB, "attrcatalogblock")));
+}
+IndexCatalogBlock BufferManager::newIndexCatalogBlocks(int block_id){
+    return *(dynamic_cast<IndexCatalogBlock *>(newBlock(ICB, "indexcatalogblock")));
+}
+
 // 要修改的bit：reference, pin, is_dirty, block_number,

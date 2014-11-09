@@ -78,8 +78,8 @@ void* BufferManager::clock_LRU(void *arg){
 		for(int i=0; i<100000; i++);			// time-delay, should modify the argument in order to timing
 		reference_bit_count++;
 	}
-    BufferManager* new_arg=(BufferManager*)arg;
-    return (void *)new_arg;
+//    BufferManager* new_arg=(BufferManager*)arg;
+//    return (void *)new_arg;
 }
 
 void BufferManager::LRU(){
@@ -496,7 +496,7 @@ std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
 }
 
 bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& tree){
-	int n=get_block_number(IB, indexname);
+	get_block_number(IB, indexname);
 	char fullname[2*max_name_length];
 	int fd;
 	// int offset;

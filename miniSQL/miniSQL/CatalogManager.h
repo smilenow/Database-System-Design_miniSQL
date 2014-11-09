@@ -18,6 +18,8 @@ public:
 	bool dropIndex(std::string indexname);
 	std::string getIndexName(std::string tablename, std::string attrname);
 	int recordSize(std::string table);
+	Table getTable(std::string tablename);
+	Attribute getAttribute(std::string tablename,std::string attrname);
 public:
 	CatalogManager(){};
 	virtual ~CatalogManager(){};

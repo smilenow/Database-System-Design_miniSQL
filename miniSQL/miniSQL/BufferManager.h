@@ -43,6 +43,15 @@ public:
 	// 事实上只有index的fname相对特殊
 	int get_block_number(int type, std::string fname);
 
+    // for catalog manager
+    int getTableCatalogNumbers();
+    int getAttrCatalogNumbers();
+    int getIndexCatalogNumbers();
+    TableCatalogBlock getTableCatalogBlocks(int block_id);
+    AttrCatalogBlock getAttrCatalogBlocks(int block_id);
+    IndexCatalogBlock getIndexCatalogBlocks(int block_id);
+    
+
 	std::vector<IndexBlock> load_tree(std::string indexname);
 	bool store_tree(std::string indexname, std::vector<IndexBlock>& tree);
 	bool delete_tree(std::string indexname);

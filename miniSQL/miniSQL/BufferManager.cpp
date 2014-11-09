@@ -24,6 +24,10 @@
 #include <math.h>
 #include "BufferManager.h"
 
+bool BufferManager::pin_bit[Buffer_Capacity];
+bool BufferManager::reference_bit[Buffer_Capacity];
+int BufferManager::reference_bit_count=0;
+
 BufferManager::BufferManager(){
 	mkdir("~/dsd", 0777);
 	mkdir("~/dsd/index", 0777);
@@ -41,7 +45,7 @@ BufferManager::BufferManager(){
 	block_number=0;
 	reference_bit_count=0;
 
-	memset(reference_bit, false, sizeof(reference_bit));
+    memset(reference_bit, false, sizeof(reference_bit));
 	memset(pin_bit, false, sizeof(pin_bit));
 	// filename?
 	LRU();

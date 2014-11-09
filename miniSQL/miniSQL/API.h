@@ -17,9 +17,9 @@
 #include "CatalogManager.h"
 #include "sqlcommand.h"
 
-extern CatalogManager *cm;
-extern RecordManager *rm;
-extern IndexManager *im;
+extern CatalogManager *catalogmanager;
+extern RecordManager *recordmanager;
+extern IndexManager *indexmanager;
 
 class API{
 public:

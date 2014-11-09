@@ -39,16 +39,16 @@ Recordinfo API::dealCmd(sqlcommand& sql){
 }
 
 int API::AttrCount(std::string tablename){
-	return cm->AttrCount(tablename);
+	return catalogmanager->AttrCount(tablename);
 }
 bool API::TableExists(std::string tablename){
-	return cm->TableExists(tablename);
+	return catalogmanager->TableExists(tablename);
 }
 bool API::IndexExists(std::string indexname){
-	return cm->IndexExists(indexname);
+	return catalogmanager->IndexExists(indexname);
 }
 bool API::AttrExists(std::string attrname,std::string tablename){
-	return cm->AttrExists(attrname, tablename);
+	return catalogmanager->AttrExists(attrname, tablename);
 }
 
 // 以下所有的都需要错误输入的检查？
@@ -64,19 +64,19 @@ Recordinfo API::select(sqlcommand& sql){
 	int IndexAttrType=0x7fff;
 
 	for(conditioni=sql.conditions.begin(); conditioni<sql.conditions.end(); conditioni++){
-		flag=cm->hasIndex(sql.tablename, (*conditioni).at(0));
+		flag=catalogmanager->hasIndex(sql.tablename, (*conditioni).at(0));
 		if(flag) {
-			IndexAttrType=cm->getAttrType(sql.tablename, (*conditioni).at(0));
+			IndexAttrType=catalogmanager->getAttrType(sql.tablename, (*conditioni).at(0));
 			break;
 		}
 	}
     
     // 需要商量
-    Table table=cm->getTable(sql.tablename);
+    Table table=catalogmanager->getTable(sql.tablename);
     
 	if(!flag) {
 		std::vector<slot> slots;
-		result=rm->Select_Record(sql, table, false, slots);
+		result=recordmanager->Select_Record(sql, table, false, slots);
 	}
 	else{
 		Value *v=NULL;
@@ -91,18 +91,18 @@ Recordinfo API::select(sqlcommand& sql){
 			v=new Value(IndexAttrType, std::stof((*conditioni).at(2)));
 			break;
 		}
-		IndexManager *im=new IndexManager();
+		IndexManager *indexmanager=new IndexManager();
         
         std::vector<slot> s;
-		if((*conditioni).at(1)=="<") s=im->_FindSmall((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<=") s=im->_FindSmallEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">") s=im->_FindBigger((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">=") s=im->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="!=") s=im->_FindNotEqual((*conditioni).at(0), *v);
-        result=rm->Select_Record(sql, table, true, s);
+		if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        result=recordmanager->Select_Record(sql, table, true, s);
 		// 然后开始剩下的暴力获取
         sql.conditions.erase(conditioni);
-        Recordinfo result2=rm->Select_Record(sql, table, false, s);
+        Recordinfo result2=recordmanager->Select_Record(sql, table, false, s);
         // and
         result.AND(result2);
 		delete v;
@@ -119,19 +119,19 @@ Recordinfo API::del(sqlcommand& sql){
     int IndexAttrType=0x7fff;
     
     for(conditioni=sql.conditions.begin(); conditioni<sql.conditions.end(); conditioni++){
-        flag=cm->hasIndex(sql.tablename, (*conditioni).at(0));
+        flag=catalogmanager->hasIndex(sql.tablename, (*conditioni).at(0));
         if(flag) {
-            IndexAttrType=cm->getAttrType(sql.tablename, (*conditioni).at(0));
+            IndexAttrType=catalogmanager->getAttrType(sql.tablename, (*conditioni).at(0));
             break;
         }
     }
     
     // 需要商量
-    Table table=cm->getTable(sql.tablename);
+    Table table=catalogmanager->getTable(sql.tablename);
     
     if(!flag) {
         std::vector<slot> slots;
-        result=rm->Delete_Record(sql, table, false, slots);
+        result=recordmanager->Delete_Record(sql, table, false, slots);
     }
     else{
         Value *v=NULL;
@@ -142,15 +142,15 @@ Recordinfo API::del(sqlcommand& sql){
         }
         
         std::vector<slot> s;
-        if((*conditioni).at(1)=="<") s=im->_FindSmall((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<=") s=im->_FindSmallEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">") s=im->_FindBigger((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">=") s=im->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="!=") s=im->_FindNotEqual((*conditioni).at(0), *v);
-        result=rm->Delete_Record(sql, table, true, s);
+        if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        result=recordmanager->Delete_Record(sql, table, true, s);
         // 然后开始剩下的暴力获取
         sql.conditions.erase(conditioni);
-        Recordinfo result2=rm->Select_Record(sql, table, false, s);
+        Recordinfo result2=recordmanager->Select_Record(sql, table, false, s);
         // and
         result.AND(result2);
         delete v;
@@ -163,31 +163,31 @@ Recordinfo API::insert(sqlcommand& sql){
     // 插入index
     
     Recordinfo result;
-    Table table=cm->getTable(sql.tablename);
+    Table table=catalogmanager->getTable(sql.tablename);
     int block_id;
     int record_id;
     
     // check primary
-    std::string primarykey=cm->pkOnTable(sql.tablename);
+    std::string primarykey=catalogmanager->pkOnTable(sql.tablename);
     if(primarykey=="Table not found in CatalogBlocks!"){
         result=Recordinfo(false, primarykey, Result(), 0);
         return result;
     }
     else{
         for(int i=0; i<sql.colValue.size(); i++){
-            if(cm->isUnique(sql.tablename, i) || cm->isPK(sql.tablename, i)){
-                std::string attrname=cm->getAttrName(sql.tablename, i);
+            if(catalogmanager->isUnique(sql.tablename, i) || catalogmanager->isPK(sql.tablename, i)){
+                std::string attrname=catalogmanager->getAttrName(sql.tablename, i);
                 // 如果有索引就用索引，并且更新索引
-                if(cm->hasIndex(sql.tablename, attrname)){
-                    std::string indexname=cm->getIndexName(sql.tablename, attrname);
-                    int AttrType=cm->getAttrType(sql.tablename, primarykey);
+                if(catalogmanager->hasIndex(sql.tablename, attrname)){
+                    std::string indexname=catalogmanager->getIndexName(sql.tablename, attrname);
+                    int AttrType=catalogmanager->getAttrType(sql.tablename, primarykey);
                     Value *v=NULL;
                     switch(AttrType){
                         case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(2)));break;
                         case 1:v=new Value(AttrType, (sql.colValue).at(2));break;
                         case -1:v=new Value(AttrType, std::stof(sql.colValue.at(2)));break;
                     }
-                    slot s=im->select(indexname, *v);
+                    slot s=indexmanager->select(indexname, *v);
                     if(s.block_id==-1){
                         Recordinfo result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
                         delete v;
@@ -200,7 +200,7 @@ Recordinfo API::insert(sqlcommand& sql){
                 tempsql.sqlType=0;
                 tempsql.conditions={{attrname, "=", sql.colValue[i]}};
                 tempsql.selectInfo={"*"};
-                Recordinfo r=rm->Select_Record(tempsql, table, 0, std::vector<slot>());
+                Recordinfo r=recordmanager->Select_Record(tempsql, table, 0, std::vector<slot>());
                 if(r.successful){
                     result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
                     return result;
@@ -208,21 +208,21 @@ Recordinfo API::insert(sqlcommand& sql){
             }
         }
         
-        result=rm->Insert_Record(sql, table, block_id, record_id);
+        result=recordmanager->Insert_Record(sql, table, block_id, record_id);
         //插入索引
         slot s=slot(block_id, record_id);
         for(int i=0; i<sql.colValue.size(); i++){
-            std::string attrname=cm->getAttrName(sql.tablename, i);
-            if(cm->hasIndex(sql.tablename, attrname)){
-                std::string indexname=cm->getIndexName(sql.tablename, attrname);
-                int AttrType=cm->getAttrType(sql.tablename, primarykey);
+            std::string attrname=catalogmanager->getAttrName(sql.tablename, i);
+            if(catalogmanager->hasIndex(sql.tablename, attrname)){
+                std::string indexname=catalogmanager->getIndexName(sql.tablename, attrname);
+                int AttrType=catalogmanager->getAttrType(sql.tablename, primarykey);
                 Value *v=NULL;
                 switch(AttrType){
                     case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(2)));break;
                     case 1:v=new Value(AttrType, (sql.colValue).at(2));break;
                     case -1:v=new Value(AttrType, std::stof(sql.colValue.at(2)));break;
                 }
-                im->_insert(indexname, *v, s);
+                indexmanager->_insert(indexname, *v, s);
             }
         }
         // 解决可能的返回错误？
@@ -231,12 +231,12 @@ Recordinfo API::insert(sqlcommand& sql){
 }
 
 Recordinfo API::createTable(sqlcommand& sql){
-    cm->insertTable(sql);
+    catalogmanager->insertTable(sql);
     std::string pk;
     std::string tablename=sql.createTableInfo[0].at(0);
-    if((pk=cm->pkOnTable(tablename))!="No primary key on this table!"){
+    if((pk=catalogmanager->pkOnTable(tablename))!="No primary key on this table!"){
         // 可以创建空的index吧？
-        im->CreateIndex(tablename+"$"+pk, cm->getAttrType(tablename, pk), std::vector<Value>(), std::vector<slot>());
+        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(), std::vector<slot>());
     }
     return Recordinfo(); // further improve
 }
@@ -244,10 +244,10 @@ Recordinfo API::createTable(sqlcommand& sql){
 Recordinfo API::createIndex(sqlcommand& sql){
 	std::string tablename=sql.createIndexInfo[1];
     std::string indexname=sql.createIndexInfo[0];
-    int attrtype=cm->getAttrType(tablename, sql.createIndexInfo[2]);
-    im->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>());
+    int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);
+    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>());
     
-    cm->insertIndex(sql);
+    catalogmanager->insertIndex(sql);
         return Recordinfo(); // further improve
 }
 
@@ -258,20 +258,20 @@ Recordinfo API::createIndex(sqlcommand& sql){
 Recordinfo API::dropTable(sqlcommand& sql){
     std::string tablename=sql.tablename;
     
-    for(int i=0; i<cm->AttrCount(tablename); i++){
-        std::string attrname=cm->getAttrName(tablename, i);
-        if(cm->hasIndex(tablename, attrname)){
-            im->DropIndex(cm->getIndexName(tablename, attrname));
-            cm->dropIndex(cm->getIndexName(tablename, attrname));
+    for(int i=0; i<catalogmanager->AttrCount(tablename); i++){
+        std::string attrname=catalogmanager->getAttrName(tablename, i);
+        if(catalogmanager->hasIndex(tablename, attrname)){
+            indexmanager->DropIndex(catalogmanager->getIndexName(tablename, attrname));
+            catalogmanager->dropIndex(catalogmanager->getIndexName(tablename, attrname));
         }
     }
-    cm->dropTable(sql.tablename);
+    catalogmanager->dropTable(sql.tablename);
         return Recordinfo(); // further improve
 }
 
 Recordinfo API::dropIndex(sqlcommand& sql){
-    cm->dropTable(sql.indexname);
-    im->DropIndex(sql.indexname);
+    catalogmanager->dropTable(sql.indexname);
+    indexmanager->DropIndex(sql.indexname);
         return Recordinfo(); // further improve
     // catalog
 }

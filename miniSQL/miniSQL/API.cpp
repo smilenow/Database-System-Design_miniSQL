@@ -39,20 +39,20 @@ Recordinfo API::dealCmd(sqlcommand& sql){
 }
 
 int API::AttrCount(std::string tablename){
-	CatalogManager *cm=new CatalogManager();
-	return cm->AttrCount(tablename);
+	CatalogManager cm=CatalogManager();
+	return cm.AttrCount(tablename);
 }
 bool API::TableExists(std::string tablename){
-	CatalogManager *cm=new CatalogManager();
-	return cm->TableExists(tablename);
+	CatalogManager cm=CatalogManager();
+	return cm.TableExists(tablename);
 }
 bool API::IndexExists(std::string indexname){
-	CatalogManager *cm=new CatalogManager();
-	return cm->IndexExists(indexname);
+	CatalogManager cm=CatalogManager();
+	return cm.IndexExists(indexname);
 }
 bool API::AttrExists(std::string attrname,std::string tablename){
-	CatalogManager *cm=new CatalogManager();
-	return cm->AttrExists(attrname, tablename);
+	CatalogManager cm=CatalogManager();
+	return cm.AttrExists(attrname, tablename);
 }
 
 // 以下所有的都需要错误输入的检查？
@@ -194,49 +194,56 @@ Recordinfo API::del(sqlcommand& sql){
 Recordinfo API::insert(sqlcommand& sql){
 	// 为什么insert也要有sqlcommand????
     // 插入index
-    RecordManager *rm=new RecordManager();
-    IndexManager *im=new IndexManager();
-    CatalogManager *cm=new CatalogManager();
+    RecordManager rm=RecordManager();
+    IndexManager im=IndexManager();
+    CatalogManager cm=CatalogManager();
     
     Recordinfo result;
     Table table;
     table.name=sql.tablename;
+    //
     int block_id;
     int record_id;
     
     // check primary
-    std::string primarykey=cm->pkOnTable(sql.tablename);
+    std::string primarykey=cm.pkOnTable(sql.tablename);
     if(primarykey=="Table not found in CatalogBlocks!"){
         result=Recordinfo(false, primarykey, Result(), 0);
+        return result;
     }
     else{
-//        if(primarykey=="No primary key on this table!"){
-//            result=rm->Insert_Record(sql, table, block_id, record_id);
-//        }
+        if(primarykey!="No primary key on this table!"){
+//            result=rm.Insert_Record(sql, table, block_id, record_id);
+            std::string indexname=cm.getIndexName(sql.tablename, primarykey);
+            slot s=im.select(indexname, );
+        }
         for(int i=0; i<sql.colValue.size(); i++){
-            if(cm->isUnique(sql.tablename, i)){
-                std::string attrname=cm->getAttrName(i);
-                if(cm->hasIndex(tablename, attrname)){
-                    im->select();
-                }
+            if(cm.isUnique(sql.tablename, i)){
+                std::string attrname=cm.getAttrName(sql.tablename, i);
+//                if(cm.hasIndex(tablename, attrname)){
+//                    im.select();
+//                }
+                // further：如果有索引用索引
                 sqlcommand tempsql=sql;
-                tempsql.
+                tempsql.sqlType=0;
+                tempsql.conditions={{attrname, "=", sql.colValue[i]}};
+                tempsql.selectInfo={"*"};
+                Recordinfo r=rm.Select_Record(tempsql, table, 0, std::vector<slot>());
+                if(r.successful){
+                    result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
+                    return result;
+                }
             }
-            
         }
         
         // catalog manager接口
-        im->select(primarykey, );
-        
-        result=rm->Insert_Record(sql, table, block_id, record_id);
+        im.select(primarykey, );
+        result=rm.Insert_Record(sql, table, block_id, record_id);
         // 向索引插入value(if needed)
         
         Recordinfo indexresult;
     }
     
-    delete rm;
-    delete im;
-    delete cm;
     return result;
 }
 
@@ -279,10 +286,10 @@ Recordinfo API::dropTable(sqlcommand& sql){
     std::string tablename=sql.tablename;
     
     for(int i=0; i<cm->AttrCount(tablename); i++){
-        std::string attrname=cm->getAttrName(i);
+        std::string attrname=cm->getAttrName(tablename, i);
         if(cm->hasIndex(tablename, attrname)){
-            im->DropIndex(cm->getIndexName(attrname));
-            cm->dropIndex(cm->getIndexName(attrname));
+            im->DropIndex(cm->getIndexName(tablename, attrname));
+            cm->dropIndex(cm->getIndexName(tablename, attrname));
         }
     }
     cm->dropTable(sql.tablename);

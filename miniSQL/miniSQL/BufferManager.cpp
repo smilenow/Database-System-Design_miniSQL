@@ -313,7 +313,7 @@ int BufferManager::get_block_number(int type, std::string fname){
 // buffer为它开辟block的时候会载入之前的信息bit，更新三个is_* bit
 // block_number++
 // 有冗余，需要优化
-void BufferManager::load_block(int block_n, int type, std::string tablename, int bid, std::string indexname){
+void BufferManager::load_block(int block_n, int type, std::string tablename, int bid){
 	int fd;
 	char fullname[3*max_name_length];
 	off_t offset=bid*block_size;
@@ -324,7 +324,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 		strcat(fullname, (tablename).c_str());
 		break;
 		case IB:
-		tablename=tablename+"$"+indexname;
+//		tablename=tablename+"$"+indexname;
 		strcpy(fullname, "~/dsd/index/");
 		strcat(fullname, (tablename).c_str());
 		break;
@@ -370,7 +370,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 // 置reference bit, pin bit
 // 加上block_id, 
 // 更新filename[]
-Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::string indexname){
+Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	// first find in buffer
 	// 可以优化
 	if(type==DB){
@@ -387,7 +387,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 		}
 	}
 	else if(type==IB){
-		tablename=tablename+"$"+indexname;
+//		tablename=tablename+"$"+indexname;
 		for(int i; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==IB){
                 std::map<int, std::string>::iterator it;
@@ -415,24 +415,25 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid, std::st
 	int block_n;
 	block_n=get_available_block();
 	if(type==DB){
-		load_block(block_n, type, tablename, bid, indexname);
+		load_block(block_n, type, tablename, bid);
 	}
 	else if(type==TCB || type==ICB || type==ACB){
-		load_block(block_n, type, tablename, bid, indexname);
+		load_block(block_n, type, tablename, bid);
 		pin_block(block_n);
 	}
 	else if(type==IB){
 		// pin?
-		load_block(block_n, type, tablename, bid, indexname);
+		load_block(block_n, type, tablename, bid);
 	}
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
 	return buffer[block_n];
 }
 
+// 多加一个new block for index
 // 同getBlock/loadBlock
-Block* BufferManager::newBlock(int type, std::string tablename, std::string indexname){
+Block* BufferManager::newBlock(int type, std::string tablename){
 	int bid;
-	if(type==IB) tablename=tablename+"$"+indexname;
+//	if(type==IB) tablename=tablename+"$"+indexname;
 	bid=get_block_number(type, tablename);
 	int block_n=get_available_block();
 

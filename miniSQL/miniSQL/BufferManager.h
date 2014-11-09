@@ -14,6 +14,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "IndexManager.h"
+#include "RecordManager.h"
+#include "CatalogManager.h"
 
 #define Buffer_Capacity 32768
 
@@ -32,11 +35,11 @@ public:
 		write_all();
 	}
 
-	Block* newBlock(int type, std::string tablename, std::string indexname="");
+	Block* newBlock(int type, std::string tablename);
 	// todo: catalog_block分开
 	// 读block可不分开，但是必须要指明是哪个manager
 	// 返回后需要dynamic_cast
-	Block* getBlock(int type, std::string tablename, int bid, std::string indexname="");
+	Block* getBlock(int type, std::string tablename, int bid);
 	// storeBlock第一个参数可以去掉，只给出block就可以
 	bool storeBlock(std::string tablename, Block *block);
 	// 为了防止产生歧义，getblocknumber使用fname(file)做变量名
@@ -63,7 +66,7 @@ public:
 	void pin_block(int block_n);
 	void unpin_block(int block_n);
 	int find_type(Block* block);
-	void load_block(int block_n, int type, std::string tablename, int bid, std::string indexname="");
+	void load_block(int block_n, int type, std::string tablename, int bid);
 	int get_available_block();
 public:
 	int block_number;

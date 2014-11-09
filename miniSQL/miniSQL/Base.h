@@ -10,7 +10,8 @@
 // Now they can perform some logical operation
 // In fact, the core code of select/delete of API are now in this file
 
-// v2.1, delete unused attribute, by Xinyuan Lu
+// v2.1, delete unused attribute in classes, by Xinyuan Lu
+
 
 #ifndef miniSQL_base_h
 #define miniSQL_base_h
@@ -52,19 +53,19 @@ public:
     Table(){};
     Table(const Table& that){
         name = that.name;
-        // dname = that.dname;
-        // AttrNum = that.AttrNum;
+        dname = that.dname;
+        AttrNum = that.AttrNum;
         RecordLength = that.RecordLength;
-        // RecordNum = that.RecordNum;
-        // size = that.size;
+        RecordNum = that.RecordNum;
+        size = that.size;
     };
     
     std::string name;       // 表名称
-    // std::string dname;      // 隶属于哪个数据库
-    // int AttrNum;            // 属性数量
+    std::string dname;      // 隶属于哪个数据库
+    int AttrNum;            // 属性数量
     int RecordLength;       // 一个记录的长度
-    // int RecordNum;          // 记录的数量
-    // int size;               // 这个表的大小/长度
+    int RecordNum;          // 记录的数量
+    int size;               // 这个表的大小/长度
     std::vector<Attribute> AttrList;    // 属性列表
 };
 
@@ -141,7 +142,7 @@ public:
         }
     }
     
-private:
+public:
     bool successful;    // 是否正确执行,获取对应的record
     std::string message;    // 错误信息
     Result res;     // 如果正确执行,获得的数据

@@ -14,9 +14,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "IndexManager.h"
-#include "RecordManager.h"
-#include "CatalogManager.h"
 
 #define Buffer_Capacity 32768
 

@@ -10,35 +10,6 @@
 #define Unused 0x00
 #define used 0x01
 #define namesize 64
-const static int contentsize = block_size-sizeof(Block)-sizeof(int);
-
-//table:name, attr#, indexontable
-//char(64)+int+int*#+char(64)*#+int*#+char(64)
-class TableCatalogBlock:public Block{
-public:
-    TableCatalogBlock():Block(){};
-public:
-    char content[contentsize];
-    int nowcontentsize;
-};
-//tablen, attrn, attrp, attrt, attrindex
-class AttrCatalogBlock:public Block{
-public:
-    AttrCatalogBlock():Block(){};
-   
-public:
-    char content[contentsize];
-    int nowcontentsize;
-};
-//index:table, attrname
-//char(64)+char(64)+char(64)
-class IndexCatalogBlock:public Block{
-public:
-    IndexCatalogBlock():Block(){};
-public:
-    char content[contentsize];
-    int nowcontentsize;
-};
 
 class CatalogManager{
 public:

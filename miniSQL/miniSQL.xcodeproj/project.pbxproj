@@ -14,6 +14,7 @@
 		5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */; };
 		5F3A83301A0F627200CDE9E3 /* IndexManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */; };
 		5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */; };
+		5FCF62671A0F72D400D7F845 /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5FCF62661A0F72D400D7F845 /* Block.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,7 @@
 		5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordManager.cpp; sourceTree = "<group>"; };
 		5F3A832A1A0F627200CDE9E3 /* RecordManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordManager.h; sourceTree = "<group>"; };
 		5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlcommand.h; sourceTree = "<group>"; };
+		5FCF62661A0F72D400D7F845 /* Block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Block.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,21 +81,22 @@
 			isa = PBXGroup;
 			children = (
 				5F3A83161A0F622800CDE9E3 /* main.cpp */,
-				5F3A831D1A0F627200CDE9E3 /* API.cpp */,
-				5F3A831E1A0F627200CDE9E3 /* API.h */,
 				5F3A831F1A0F627200CDE9E3 /* Base.cpp */,
 				5F3A83201A0F627200CDE9E3 /* Base.h */,
+				5FCF62661A0F72D400D7F845 /* Block.cpp */,
 				5F3A83211A0F627200CDE9E3 /* Block.h */,
-				5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */,
-				5F3A83231A0F627200CDE9E3 /* BPlusTree.h */,
+				5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */,
+				5F3A831D1A0F627200CDE9E3 /* API.cpp */,
+				5F3A831E1A0F627200CDE9E3 /* API.h */,
 				5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */,
 				5F3A83251A0F627200CDE9E3 /* BufferManager.h */,
 				5F3A83261A0F627200CDE9E3 /* CatalogManager.h */,
+				5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */,
+				5F3A83231A0F627200CDE9E3 /* BPlusTree.h */,
 				5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */,
 				5F3A83281A0F627200CDE9E3 /* IndexManager.h */,
 				5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */,
 				5F3A832A1A0F627200CDE9E3 /* RecordManager.h */,
-				5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */,
 			);
 			path = miniSQL;
 			sourceTree = "<group>";
@@ -159,6 +162,7 @@
 				5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */,
 				5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */,
 				5F3A832D1A0F627200CDE9E3 /* Base.cpp in Sources */,
+				5FCF62671A0F72D400D7F845 /* Block.cpp in Sources */,
 				5F3A832C1A0F627200CDE9E3 /* API.cpp in Sources */,
 				5F3A83171A0F622800CDE9E3 /* main.cpp in Sources */,
 			);
@@ -274,6 +278,7 @@
 				5F3A831C1A0F622800CDE9E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

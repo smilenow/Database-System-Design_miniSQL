@@ -10,35 +10,6 @@
 
 //------------------------------------------------------------------------------------------//
 
-void IndexBlock::init(){
-    clr();
-    calc_maxkey();
-    init_key_slots();
-};
-
-IndexBlock::IndexBlock(std::string IndexName,int NodeType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),split(0){ init(); };
-
-IndexBlock::IndexBlock(std::string IndexName,int NodeType,int AttrType):Block(),IndexName(IndexName),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
-    init();
-};
-
-IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),split(0){
-    init();
-};
-
-IndexBlock::IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int tag):IndexName(IndexName),Block(block_id),NodeType(NodeType),nowkey(0),AttrType(AttrType),split(0){
-    init();
-};
-
-
-IndexBlock::~IndexBlock(){
-    //要把东西写回buffer
-    //然后clear
-    clr();
-}
-
-//------------------------------------------------------------------------------------------//
-
 void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot){
 //    int NewBlockID;
     // buffer 给我申请一个可用的block_id,记为NewBlockID

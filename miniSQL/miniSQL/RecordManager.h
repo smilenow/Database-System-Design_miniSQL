@@ -25,19 +25,6 @@ extern BufferManager *buffermanager;
 // message: 这两个接口请务必给好，具体可以看cpp里面我需要的东西，当然如果有方便的方式或者需要更改对应函数变量就直接说好了
 
 
-static const int contentsize_recordmanager = block_size-sizeof(Block)-sizeof(int);
-
-class RecordBlock:public Block{
-public:
-    RecordBlock():Block(){};
-    RecordBlock(const char *Tablename):Block(Tablename){};
-    RecordBlock(int block_id):Block(block_id){};
-    RecordBlock(int block_id,const char *Tablename):Block(block_id,Tablename){};
-public:
-    char content[contentsize_recordmanager];
-    int nowcontentsize;
-};
-
 class RecordManager{
 public:
     RecordManager(){};

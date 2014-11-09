@@ -179,7 +179,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
     int blocks = buffermanager->get_block_number(DB, TableName);  // 获取table下的block
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
-    int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
+    int blockLen = (contentsize_recordmanager) / tupleLen;       // 一个block最多放多少个记录
     long num=0;
     bool successful = false;
     
@@ -255,7 +255,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     int blocks = buffermanager->get_block_number(DB, TableName);  // 获取table下的block
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
-    int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
+    int blockLen = (contentsize_recordmanager) / tupleLen;       // 一个block最多放多少个记录
     long num=0;
     bool successful = false;
     
@@ -323,7 +323,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     Recordinfo nowrinfo;                                        // 当前写入记录的返回结果
     
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
-    int blockLen = (contentsize) / tupleLen;       // 一个block最多放多少个记录
+    int blockLen = (contentsize_recordmanager) / tupleLen;       // 一个block最多放多少个记录
     
     int i;
     for (i=0;i<blocks;i++){

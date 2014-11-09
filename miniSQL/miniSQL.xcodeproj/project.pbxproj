@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		5F3A83171A0F622800CDE9E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83161A0F622800CDE9E3 /* main.cpp */; };
+		5F3A832C1A0F627200CDE9E3 /* API.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A831D1A0F627200CDE9E3 /* API.cpp */; };
+		5F3A832D1A0F627200CDE9E3 /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A831F1A0F627200CDE9E3 /* Base.cpp */; };
+		5F3A832E1A0F627200CDE9E3 /* BPlusTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */; };
+		5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */; };
+		5F3A83301A0F627200CDE9E3 /* IndexManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */; };
+		5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +31,21 @@
 /* Begin PBXFileReference section */
 		5F3A83131A0F622800CDE9E3 /* miniSQL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = miniSQL; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F3A83161A0F622800CDE9E3 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		5F3A831D1A0F627200CDE9E3 /* API.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = API.cpp; sourceTree = "<group>"; };
+		5F3A831E1A0F627200CDE9E3 /* API.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = API.h; sourceTree = "<group>"; };
+		5F3A831F1A0F627200CDE9E3 /* Base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Base.cpp; sourceTree = "<group>"; };
+		5F3A83201A0F627200CDE9E3 /* Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base.h; sourceTree = "<group>"; };
+		5F3A83211A0F627200CDE9E3 /* Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Block.h; sourceTree = "<group>"; };
+		5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BPlusTree.cpp; sourceTree = "<group>"; };
+		5F3A83231A0F627200CDE9E3 /* BPlusTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BPlusTree.h; sourceTree = "<group>"; };
+		5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BufferManager.cpp; sourceTree = "<group>"; };
+		5F3A83251A0F627200CDE9E3 /* BufferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferManager.h; sourceTree = "<group>"; };
+		5F3A83261A0F627200CDE9E3 /* CatalogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CatalogManager.h; sourceTree = "<group>"; };
+		5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IndexManager.cpp; sourceTree = "<group>"; };
+		5F3A83281A0F627200CDE9E3 /* IndexManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexManager.h; sourceTree = "<group>"; };
+		5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordManager.cpp; sourceTree = "<group>"; };
+		5F3A832A1A0F627200CDE9E3 /* RecordManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordManager.h; sourceTree = "<group>"; };
+		5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlcommand.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +79,21 @@
 			isa = PBXGroup;
 			children = (
 				5F3A83161A0F622800CDE9E3 /* main.cpp */,
+				5F3A831D1A0F627200CDE9E3 /* API.cpp */,
+				5F3A831E1A0F627200CDE9E3 /* API.h */,
+				5F3A831F1A0F627200CDE9E3 /* Base.cpp */,
+				5F3A83201A0F627200CDE9E3 /* Base.h */,
+				5F3A83211A0F627200CDE9E3 /* Block.h */,
+				5F3A83221A0F627200CDE9E3 /* BPlusTree.cpp */,
+				5F3A83231A0F627200CDE9E3 /* BPlusTree.h */,
+				5F3A83241A0F627200CDE9E3 /* BufferManager.cpp */,
+				5F3A83251A0F627200CDE9E3 /* BufferManager.h */,
+				5F3A83261A0F627200CDE9E3 /* CatalogManager.h */,
+				5F3A83271A0F627200CDE9E3 /* IndexManager.cpp */,
+				5F3A83281A0F627200CDE9E3 /* IndexManager.h */,
+				5F3A83291A0F627200CDE9E3 /* RecordManager.cpp */,
+				5F3A832A1A0F627200CDE9E3 /* RecordManager.h */,
+				5F3A832B1A0F627200CDE9E3 /* sqlcommand.h */,
 			);
 			path = miniSQL;
 			sourceTree = "<group>";
@@ -118,6 +154,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F3A83301A0F627200CDE9E3 /* IndexManager.cpp in Sources */,
+				5F3A832E1A0F627200CDE9E3 /* BPlusTree.cpp in Sources */,
+				5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */,
+				5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */,
+				5F3A832D1A0F627200CDE9E3 /* Base.cpp in Sources */,
+				5F3A832C1A0F627200CDE9E3 /* API.cpp in Sources */,
 				5F3A83171A0F622800CDE9E3 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

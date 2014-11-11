@@ -30,7 +30,8 @@ int BufferManager::reference_bit_count=0;
 
 // 创建文件夹、catalog的三个文件，初始化，调用LRU()
 BufferManager::BufferManager(){
-	remove("/Users/Kael/dsd");
+//    // debug结束之后必须要修改！！！！！！！
+//    rmdir("/Users/Kael/dsd");
 	mkdir("/Users/Kael/dsd", 0777);
 //    printf("%d\n", errno);
 	mkdir("/Users/Kael/dsd/index", 0777);
@@ -316,12 +317,12 @@ int BufferManager::get_block_number(int type, std::string fname){
 		strcpy(filename, "/Users/Kael/dsd/catalog/");
 		strcat(filename, fname.c_str());
 	}
-    if((fd=open(filename, O_RDWR|O_APPEND|O_CREAT, 777))<0){
+    if((fd=open(filename, O_RDWR|O_APPEND|O_CREAT, 0777))<0){
         printf("------%d\n", errno);
 		assert(0);
     }
 	offset=lseek(fd, 0, SEEK_END);
-    close(fd);
+    if(close(fd)<0) assert(0);
 	if(offset==0) return 0;
 	// ??
 	return (int)ceil((float)offset/block_size);
@@ -493,7 +494,7 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 	buffer[block_n]->is_valid=true;
 	buffer[block_n]->is_pin=false;
 	buffer[block_n]->is_dirty=false;
-    int fd=open(fullname, O_RDWR|O_APPEND|O_CREAT, 777);
+    int fd=open(fullname, O_RDWR|O_APPEND|O_CREAT, 0777);
     // char a[block_size]={'a', };
     long t=write(fd, buffer[block_n], block_size);
     // printf("%d\n", errno);
@@ -535,7 +536,7 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& t
 	strcpy(fullname, "/Users/Kael/dsd/index/");
 	strcat(fullname, indexname.c_str());
     remove(fullname);
-	fd=open(fullname, O_WRONLY|O_CREAT, 777);
+	fd=open(fullname, O_WRONLY|O_CREAT, 0777);
 	// IndexBlock* ib;	// 可能要用指针？
 	for(std::vector<IndexBlock>::iterator j=tree.begin(); j!=tree.end(); j++){
 		IndexBlock* ib=new IndexBlock();

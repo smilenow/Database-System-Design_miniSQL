@@ -28,6 +28,7 @@ bool BufferManager::pin_bit[Buffer_Capacity];
 bool BufferManager::reference_bit[Buffer_Capacity];
 int BufferManager::reference_bit_count=0;
 
+// 创建文件夹、catalog的三个文件，初始化，调用LRU()
 BufferManager::BufferManager(){
 	mkdir("/Users/Kael/dsd", 0777);
 //    printf("%d\n", errno);
@@ -72,6 +73,7 @@ int BufferManager::find_type(Block *block){
 	return 0;
 }
 
+// 创建thread不断更新reference_bit，如果被锁住不更新
 void* BufferManager::clock_LRU(void *arg){
 	while(1){
 		if(pin_bit[reference_bit_count]==false)
@@ -83,6 +85,7 @@ void* BufferManager::clock_LRU(void *arg){
 //    return (void *)new_arg;
 }
 
+// 创建线程
 void BufferManager::LRU(){
 	pthread_t tid;
 //	pthread_attr_t attr;
@@ -123,6 +126,7 @@ void BufferManager::unpin_block(int block_n){
 	pin_bit[block_n]=false;
 }
 
+// 下面三个根据buffer中的位置block_n写回不同的block
 // 下面三个可以合并成一个，但尚不确定
 // 这三个write会erase filename, clear is_dirty, 并且delete指针, 其他不动
 bool BufferManager::write_recordblock(int block_n){
@@ -543,12 +547,15 @@ IndexCatalogBlock BufferManager::getIndexCatalogBlocks(int block_id){
     return *(dynamic_cast<IndexCatalogBlock *>(getBlock(ICB, "indexcatalogblock", block_id)));
 }
 void BufferManager::storeTableCatalogBlocks(int block_id, TableCatalogBlock& nowblock){
+    nowblock.block_id=block_id;
     storeBlock("tablecatalogblock", &nowblock);
 }
 void BufferManager::storeAttrCatalogBlocks(int block_id, AttrCatalogBlock& nowblock){
+    nowblock.block_id=block_id;
     storeBlock("attrcatalogblock", &nowblock);
 }
 void BufferManager::storeIndexCatalogBlocks(int block_id, IndexCatalogBlock& nowblock){
+    nowblock.block_id=block_id;
     storeBlock("indexcatalogblock", &nowblock);
 }
 TableCatalogBlock BufferManager::newTableCatalogBlocks(){

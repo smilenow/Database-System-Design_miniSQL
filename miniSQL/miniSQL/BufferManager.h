@@ -80,15 +80,18 @@ public:
 	void load_block(int block_n, int type, std::string tablename, int bid);
 	int get_available_block();
 public:
+	// 当前valid的block个数
 	int block_number;
 
 	// if the pin
-	// but if explicitly required, it should write inspite the pin_bit
+	// but if explicitly required, it should write inspite the pin_bit？
 	static bool pin_bit[Buffer_Capacity];
     static bool reference_bit[Buffer_Capacity];
 	static int reference_bit_count;
-	
+	// filename存放对应的block的filename
+	// map并不适合这个结构，但一开始写的是map，后来修改了结构，没有把map改掉了
 	std::map<int, std::string> filename;
+	// 存放各种block
 	Block* buffer[Buffer_Capacity];
 };
 

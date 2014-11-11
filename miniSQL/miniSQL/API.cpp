@@ -236,7 +236,7 @@ Recordinfo API::createTable(sqlcommand& sql){
     std::string tablename=sql.createTableInfo[0].at(0);
     if((pk=catalogmanager->pkOnTable(tablename))!="No primary key on this table!"){
         // 可以创建空的index吧？
-        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(), std::vector<slot>());
+        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(0), std::vector<slot>(0));
     }
     return Recordinfo(); // further improve
 }

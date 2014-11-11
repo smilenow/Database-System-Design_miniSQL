@@ -1,4 +1,5 @@
 %{
+	
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,46 +68,51 @@ API *api;
 line	: create_table ';'	{
 		if(checkLexeme("createtable")){
 			execute("createtable");
-			sql.getCreateTableInfo();
+			//sql.getCreateTableInfo();
 		}
 		reset();
 		}
 	| create_index	';'	{
-		checkLexeme("createindex");
-		execute("createindex");
-		sql.getCreateIndexInfo();
+		if(checkLexeme("createindex")){
+			execute("createindex");
+			sql.getCreateIndexInfo();
+		}
 		reset();
 	}
 	| select_statement ';'	{
-		checkLexeme("select");
+		if(checkLexeme("select")){
 		execute("select");
+		}
 		//sql.getconditions();
 		//sql.getSelectInfo();
 		//printf("%s\n", sql.getSelectTablen().c_str());
 		reset();
 	}
 	| delete_statement ';'	{
-		checkLexeme("delete");
-		execute("delete");
-		sql.getconditions();
+		if(checkLexeme("delete")){
+			execute("delete");
+		}
+		//sql.getconditions();
 		reset();
 	}
 	| drop_table ';'	{
-		checkLexeme("droptable");
-		execute("droptable");
-		printf("%s",sql.getTablen().c_str());
+		if(checkLexeme("droptable"))
+			execute("droptable");
+		//printf("%s",sql.getTablen().c_str());
 		reset();
 	}
 	| drop_index ';'	{
-		checkLexeme("dropindex");
-		execute("dropindex");
-		printf("%s",sql.getIndexn().c_str());
+		if(checkLexeme("dropindex")){
+			execute("dropindex");
+		}
+		//printf("%s",sql.getIndexn().c_str());
 		reset();
 	}
 	| insert_statement ';' {
-		checkLexeme("insert");
-		execute("insert");
-		sql.getcolValue();
+		if(checkLexeme("insert")){
+			execute("insert");
+		}
+		//sql.getcolValue();
 		reset();
 	}
 	| EXECFILE FILENAME ';' {
@@ -131,41 +137,41 @@ line	: create_table ';'	{
 		reset();
 	}
 	| line create_index ';' {
-		checkLexeme("createindex");
-		execute("createindex");
-		sql.getCreateIndexInfo();
+		if(checkLexeme("createindex"))
+			execute("createindex");
+		//sql.getCreateIndexInfo();
 		reset();
 	}
 	| line select_statement ';' {
-		checkLexeme("select");
-		execute("select");
+		if(checkLexeme("select"))
+			execute("select");
 		//sql.getconditions();
 		//sql.getSelectInfo();
 		//printf("%s\n", sql.getSelectTablen().c_str());
 		reset();
 	}
 	| line delete_statement ';'	{
-		checkLexeme("delete");
-		execute("delete");
-		sql.getconditions();
+		if(checkLexeme("delete"))
+			execute("delete");
+		//sql.getconditions();
 		reset();
 	}
 	| line insert_statement ';' {
-		checkLexeme("insert");
-		execute("insert");
-		sql.getcolValue();
+		if(checkLexeme("insert"))
+			execute("insert");
+		//sql.getcolValue();
 		reset();
 	}
 	| line drop_table ';' {
-		checkLexeme("droptable");
-		execute("droptable");
-		printf("%s",sql.getTablen().c_str());
+		if(checkLexeme("droptable"))
+			execute("droptable");
+		//printf("%s",sql.getTablen().c_str());
 		reset();
 	}
 	| line drop_index ';' {
-		checkLexeme("dropindex");
-		execute("dropindex");
-		printf("%s",sql.getIndexn().c_str());
+		if(checkLexeme("dropindex"))
+			execute("dropindex");
+		//printf("%s",sql.getIndexn().c_str());
 		reset();
 	}
 	| line EXECFILE FILENAME ';' {
@@ -300,49 +306,81 @@ void prompt(){
 
 bool checkLexeme(std::string s){
 	if(s=="select"){
-		if(!catalogmanager->TableExists(sql.getTablen())) return false;
+		bool f=true;
+		if(!catalogmanager->TableExists(sql.getTablen())) {
+			printf("Table doesn't exist!\n");
+			f=false;
+		}
 		std::vector<std::vector<std::string> > v=sql.getconditions();
 		std::vector<std::vector<std::string> >::iterator iter;
 		for(iter = v.begin(); iter != v.end(); iter++)  {
 			std::vector<std::string>::iterator it = (*iter).begin();
-			if(!catalogmanager->AttrExists(*it,sql.getTablen())) return false;
+			if(!catalogmanager->AttrExists(*it,sql.getTablen())) {
+				printf("Attribute %s doesn't exist!\n",(*it).c_str());
+				f=false;
+			}
 		}
 		std::vector<std::string> attr=sql.GetSelectInfo();
 		std::vector<std::string>::iterator it;
 		if(*attr.begin()!="*"){
 		for(it = attr.begin(); it != attr.end(); it++)  {
-			if(!catalogmanager->AttrExists(*it,sql.getTablen())) return false;
+			if(!catalogmanager->AttrExists(*it,sql.getTablen())) {
+				printf("Attribute %s doesn't exist!\n",(*it).c_str());
+				f=false;
+			}
 		}
 		}
-		return true;
+		return f;
 	}
 	if(s=="delete"){
-		if(catalogmanager->TableExists(sql.getTablen())) return false;
+		bool f=true;
+		if(!catalogmanager->TableExists(sql.getTablen())) {
+			printf("Table doesn't exist!\n");
+			f=false;
+		}
 		std::vector<std::vector<std::string> > v=sql.getconditions();
 		std::vector<std::vector<std::string> >::iterator iter;
 		for(iter = v.begin(); iter != v.end(); iter++)  {
 			std::vector<std::string>::iterator it = (*iter).begin();
-			if(!catalogmanager->AttrExists(*it,sql.getTablen())) return false;
+			if(!catalogmanager->AttrExists(*it,sql.getTablen())) {
+				printf("Attribute %s doesn't exist!\n",(*it).c_str());
+				f=false;
+			}
 		}
-		return true;
+		return f;
 	}
 	if(s=="insert"){
-		if(!catalogmanager->TableExists(sql.getTablen())) return false;
+		bool f=true;
+		if(!catalogmanager->TableExists(sql.getTablen())) {
+			printf("Table doesn't exist!\n");
+			f=false;
+		}
 		//std::cout<< "inserted "<<attrcount<<std::endl;
 		int c=catalogmanager->AttrCount(tablen);
-		if(attrcount!=c) return false;
+		if(attrcount!=c) {
+			printf("Attribute number doesn't fit!\n");
+			f=false;
+		}
 		//std::vector<int> tablet[32];
 		//tablet=cm->getAllAttrType(tablen);
 		for(int i=0;i<c;i++){
-			if(attrt[i]!=catalogmanager->getAllAttrType(tablen)[i]||(attrt[i]==0&&catalogmanager->getAllAttrType(tablen)[i]==-1)) return false;
+			if(attrt[i]!=catalogmanager->getAllAttrType(tablen)[i]&&!(attrt[i]==0&&catalogmanager->getAllAttrType(tablen)[i]==-1)&&!(attrt[i]==-1&&catalogmanager->getAllAttrType(tablen)[i]==0)) 
+			{	
+				printf("Attribute type doesn't fit!\n");
+				f=false;
+			}
 		}
-		return true;
+		return f;
 	}
 	if(s=="createtable"){
-		if(catalogmanager->TableExists(tablen)) return false;
+		bool f=true;
+		if(catalogmanager->TableExists(tablen)) {
+			printf("Table doesn't exist!\n");
+			f=false;
+		}
 		if(tablen.length()>64) {
 			printf("Table name is too long!\n");
-			return false;
+			f=false;
 		}
 
 		for(int i=0;i<attrcount;i++){
@@ -350,27 +388,34 @@ bool checkLexeme(std::string s){
 			//printf("i=%d",i);
 				if(attrn[i]==attrn[j]){
 					printf("Duplicate attribute names '%s'!\n",attrn[i].c_str());
-					return false;
+					f=false;
 	        		}
 			}
 		}
-		if(primaryAttr!="")	if(!checkPrimary(primaryAttr)) return false;
-		return true;
+		if(primaryAttr!="")	if(!checkPrimary(primaryAttr)) f=false;
+		return f;
 	}
 
 	if(s=="createindex"){
 		//printf("create index check\n");
-		return catalogmanager->TableExists(tablen) && catalogmanager->AttrExists(attrname,tablen) && catalogmanager->IndexExists(indexn);
+		bool f=true;
+		if(!catalogmanager->TableExists(tablen))	{printf("Table doesn't exists.\n");f=false;}
+		if(!catalogmanager->AttrExists(attrname,tablen))	{printf("Attribute doesn't exists.\n");f=false;}
+		if(catalogmanager->IndexExists(indexn))	{printf("Index name already't exists.\n");f=false;}
+		//if(f) {printf("exists\n");return true;}
+		return f;
 	}
 	
 
 	if(s=="droptable"){
 		//check if tablen exists...
-		return catalogmanager->TableExists(tablen);
+		if(!catalogmanager->TableExists(tablen))	{printf("Table doesn't exists.\n");return false;}
+		return true;
 	}
 	if(s=="dropindex"){
 		//check if indexn exists...
-		return catalogmanager->IndexExists(indexn);
+		if(!catalogmanager->IndexExists(indexn))	{printf("Index doesn't exists.\n");return false;}
+		return true;
 	}
 	
 	return false;
@@ -481,12 +526,12 @@ void reset(){
 }
 int main()
 {
-	
-catalogmanager = new CatalogManager();
-recordmanager = new RecordManager();
-indexmanager = new IndexManager();
-buffermanager = new BufferManager();
-api = new API();
+
+	catalogmanager = new CatalogManager();
+	recordmanager = new RecordManager();
+	indexmanager = new IndexManager();
+	buffermanager = new BufferManager();
+	api = new API();
 	prompt();
 
 	//printResult();

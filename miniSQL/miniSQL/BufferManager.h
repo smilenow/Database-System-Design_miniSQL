@@ -47,15 +47,15 @@ public:
     int getTableCatalogBlocksNumber();
     int getAttrCatalogBlocksNumber();
     int getIndexCatalogBlocksNumber();
-    TableCatalogBlock getTableCatalogBlocks(int block_id);
-    AttrCatalogBlock getAttrCatalogBlocks(int block_id);
-    IndexCatalogBlock getIndexCatalogBlocks(int block_id);
-    void storeTableCatalogBlocks(int block_id, TableCatalogBlock& nowblock);
-    void storeAttrCatalogBlocks(int block_id, AttrCatalogBlock& nowblock);
-    void storeIndexCatalogBlocks(int block_id, IndexCatalogBlock& nowblock);
-    TableCatalogBlock newTableCatalogBlocks();
-    AttrCatalogBlock newAttrCatalogBlocks();
-    IndexCatalogBlock newIndexCatalogBlocks();
+    TableCatalogBlock* getTableCatalogBlocks(int block_id);
+    AttrCatalogBlock* getAttrCatalogBlocks(int block_id);
+    IndexCatalogBlock* getIndexCatalogBlocks(int block_id);
+    void storeTableCatalogBlocks(int block_id, TableCatalogBlock* nowblock);
+    void storeAttrCatalogBlocks(int block_id, AttrCatalogBlock* nowblock);
+    void storeIndexCatalogBlocks(int block_id, IndexCatalogBlock* nowblock);
+    TableCatalogBlock* newTableCatalogBlocks();
+    AttrCatalogBlock* newAttrCatalogBlocks();
+    IndexCatalogBlock* newIndexCatalogBlocks();
 
 	std::vector<IndexBlock> load_tree(std::string indexname);
 	bool store_tree(std::string indexname, std::vector<IndexBlock>& tree);

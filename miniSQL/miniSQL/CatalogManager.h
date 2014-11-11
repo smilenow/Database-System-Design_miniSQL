@@ -25,6 +25,9 @@ extern BufferManager *buffermanager;
 //char(64)+int+char(64)+int
 
 std::string getStrEle(std::string s);
+std::string _memcpy(int i,AttrCatalogBlock* nowblock);
+std::string _memcpy(int i,TableCatalogBlock* nowblock);
+std::string _memcpy(int i,IndexCatalogBlock* nowblock);
 
 class CatalogManager{
 public:
@@ -56,6 +59,6 @@ public:
     int recordSize(std::string table);
     Table getTable(std::string tablename);
     std::vector<int> getAllAttrType(std::string tablename);
-};
+    };
 
 #endif

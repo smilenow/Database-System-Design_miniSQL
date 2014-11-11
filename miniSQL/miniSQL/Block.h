@@ -131,7 +131,7 @@ public:
 //------------------------------------------------------------------------------------------//
 
 const static int contentsize = block_size-sizeof(Block)-sizeof(int);
-//table:name, attr#, indexontable
+//table:name, attr#, pkontable
 //char(64)+int+int*#+char(64)*#+int*#+char(64)
 class TableCatalogBlock:public Block{
 public:

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5F37C2AD1A12F10C0074D881 /* makefile in Sources */ = {isa = PBXBuildFile; fileRef = 5F37C2AA1A12F10C0074D881 /* makefile */; };
 		5F3A83171A0F622800CDE9E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A83161A0F622800CDE9E3 /* main.cpp */; };
 		5F3A832C1A0F627200CDE9E3 /* API.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A831D1A0F627200CDE9E3 /* API.cpp */; };
 		5F3A832D1A0F627200CDE9E3 /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5F3A831F1A0F627200CDE9E3 /* Base.cpp */; };
@@ -31,6 +32,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5F37C2AA1A12F10C0074D881 /* makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = makefile; sourceTree = "<group>"; };
 		5F3A83131A0F622800CDE9E3 /* miniSQL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = miniSQL; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F3A83161A0F622800CDE9E3 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5F3A831D1A0F627200CDE9E3 /* API.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = API.cpp; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				5F3A83161A0F622800CDE9E3 /* main.cpp */,
+				5F37C2AA1A12F10C0074D881 /* makefile */,
 				5F3A831F1A0F627200CDE9E3 /* Base.cpp */,
 				5F3A83201A0F627200CDE9E3 /* Base.h */,
 				5FCF62661A0F72D400D7F845 /* Block.cpp */,
@@ -164,6 +167,7 @@
 				5F73E7EC1A0F7F0B006094A7 /* CatalogManager.cpp in Sources */,
 				5F3A832E1A0F627200CDE9E3 /* BPlusTree.cpp in Sources */,
 				5F3A83311A0F627200CDE9E3 /* RecordManager.cpp in Sources */,
+				5F37C2AD1A12F10C0074D881 /* makefile in Sources */,
 				5F3A832F1A0F627200CDE9E3 /* BufferManager.cpp in Sources */,
 				5F3A832D1A0F627200CDE9E3 /* Base.cpp in Sources */,
 				5FCF62671A0F72D400D7F845 /* Block.cpp in Sources */,

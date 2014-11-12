@@ -224,7 +224,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
         }
     }
     else {
-        if (conditions[0].size()) Exist_Where = true;
+        if (conditions.size()) Exist_Where = true;
         for (int i=0;i<blocks;i++){
             RecordBlock *nowblock = dynamic_cast<RecordBlock*>( buffermanager->getBlock(DB,TableName,i) );
             for (int j=0;j<blockLen;j++)
@@ -286,7 +286,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
         }
     }
     else {
-        if (conditions[0].size()) Exist_Where = true;
+        if (conditions.size()) Exist_Where = true;
         for (int i=0;i<blocks;i++){
             RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,i) );
             for (int j=0;j<blockLen;j++)

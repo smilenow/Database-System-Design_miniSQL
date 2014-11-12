@@ -188,7 +188,7 @@ Recordinfo API::insert(sqlcommand& sql){
                         case -1:v=new Value(AttrType, std::stof(sql.colValue.at(i)));break;
                     }
                     slot s=indexmanager->select(indexname, *v);
-                    if(s.block_id==-1){
+                    if(s.block_id!=-1){
                         Recordinfo result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
                         delete v;
                         return result;
@@ -240,8 +240,8 @@ Recordinfo API::createTable(sqlcommand& sql){
         
         sqlcommand tempsql=sqlcommand();
         tempsql.sqlType=4;
-        tempsql.setCreateIndexInfo(tablename, pk);
         tempsql.indexname=tablename+"$"+pk;
+        tempsql.setCreateIndexInfo(tablename, pk);
         catalogmanager->insertIndex(tempsql);
     }
     return Recordinfo(); // further improve

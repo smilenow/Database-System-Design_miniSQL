@@ -136,6 +136,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 int x;
                 memcpy(&x, rblock.content+j*tuple_Len+p, sizeof(int));
                 p += sizeof(int);
+                ss.str("");
                 ss << x;
                 tuple.cols.push_back(ss.str());
             }
@@ -144,6 +145,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 float x;
                 memcpy(&x, rblock.content+j*tuple_Len+p, sizeof(float));
                 p += sizeof(float);
+                ss.str("");
                 ss << x;
                 tuple.cols.push_back(ss.str());
             }
@@ -306,6 +308,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     }
     
     std::stringstream ss;
+    ss.str("");
     ss << num;
     std::string message;
     if (num==0) message = "There is no record in deletion.";

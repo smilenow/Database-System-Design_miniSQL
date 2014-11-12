@@ -4,6 +4,16 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>a.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>make.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>miniSQL.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -13,6 +23,16 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>5F3A83121A0F622800CDE9E3</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E4C1821E1A138EB000105933</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E4FDA7CB1A13B54500D91512</key>
 		<dict>
 			<key>primary</key>
 			<true/>

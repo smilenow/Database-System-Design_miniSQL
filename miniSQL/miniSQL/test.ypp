@@ -236,7 +236,7 @@ operation	: GE	{strcpy($$,">=");}
 number	: intnum {$$=$1;}
 	| fnum {$$=$1;}
 	;
-tablename	: identifier	{tablen=$1;}
+tablename	: identifier	{tablen=$1;sql.tablename=tablen;}
 	;
 
 create_table	: CREATE TABLE tablename '(' table_element_list ',' table_constraint ')'
@@ -401,7 +401,7 @@ bool checkLexeme(std::string s){
 		bool f=true;
 		if(!catalogmanager->TableExists(tablen))	{printf("Table doesn't exists.\n");f=false;}
 		if(!catalogmanager->AttrExists(attrname,tablen))	{printf("Attribute doesn't exists.\n");f=false;}
-		if(catalogmanager->IndexExists(indexn))	{printf("Index name already't exists.\n");f=false;}
+		if(catalogmanager->IndexExists(indexn))	{printf("Index name already exists.\n");f=false;}
 		//if(f) {printf("exists\n");return true;}
 		return f;
 	}
@@ -448,7 +448,7 @@ void execute(std::string s){
 		//printf("creating...");
 		//create tables according to attrn/p/t & tablen
 		sql.sqlType=3;
-		sql.setCreateTableInfo(tablen,attrn,attrp,attrt);
+		sql.setCreateTableInfo(tablen,attrcount,attrn,attrp,attrt);
 		printRecordInfo("Create table",api->createTable(sql));
 	}
 	if(s=="createindex"){

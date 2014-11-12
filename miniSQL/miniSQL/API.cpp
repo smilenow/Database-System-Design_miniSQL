@@ -99,6 +99,11 @@ Recordinfo API::select(sqlcommand& sql){
         else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
         else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="==") s.push_back(indexmanager->select((*conditioni).at(0), *v));
+        if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
+            delete v;
+            return Recordinfo(false, "Cannot find the record!", Result(), 0);
+        }
         result=recordmanager->Select_Record(sql, table, true, s);
 		// 然后开始剩下的暴力获取
         sql.conditions.erase(conditioni);
@@ -147,6 +152,11 @@ Recordinfo API::del(sqlcommand& sql){
         else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
         else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="==") s.push_back(indexmanager->select((*conditioni).at(0), *v));
+        if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
+            delete v;
+            return Recordinfo(false, "Cannot find the record!", Result(), 0);
+        }
         result=recordmanager->Delete_Record(sql, table, true, s);
         // 然后开始剩下的暴力获取
         sql.conditions.erase(conditioni);
@@ -276,7 +286,7 @@ Recordinfo API::dropTable(sqlcommand& sql){
 }
 
 Recordinfo API::dropIndex(sqlcommand& sql){
-    catalogmanager->dropTable(sql.indexname);
+    catalogmanager->dropIndex(sql.indexname);
     indexmanager->DropIndex(sql.indexname);
         return Recordinfo(); // further improve
     // catalog

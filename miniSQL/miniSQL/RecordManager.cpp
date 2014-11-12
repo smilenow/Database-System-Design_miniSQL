@@ -358,7 +358,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
         nowblock->content[0] = used;
         block_id = i;
         record_id = 0;
-        buffermanager->storeBlock(TableName,nowblock);
+//        buffermanager->storeBlock(TableName,nowblock);
         return nowrinfo;
     }
     

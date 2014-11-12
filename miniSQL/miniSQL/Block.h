@@ -83,7 +83,7 @@ public:
     int AttrType;               // 索引对应的类型
     int split;                  // 判断是否有分裂
 public:
-    IndexBlock():Block(),nowkey(0){ clr(); };
+    IndexBlock():Block(),nowkey(0){ init(); };
     IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType);
     
     // 析构的时候要把信息写回buffer

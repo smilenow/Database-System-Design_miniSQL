@@ -189,6 +189,7 @@ struct slot{
     int offset;
     slot():block_id(-1),offset(-1){};
     slot(int bid,int offset):block_id(bid),offset(offset){};
+    slot(const slot& that){ this->block_id = that.block_id; this->offset = that.offset; }
     void reset(){ block_id=-1,offset=-1; }
 };
 

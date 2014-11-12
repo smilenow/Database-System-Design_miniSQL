@@ -44,13 +44,15 @@ void printRecordInfo(std::string s,Recordinfo info){
 }
 int main(int argc, const char * argv[]) {
     sqlcommand sql;
+    //create
     sql.sqlType=3;
     std::string n[2]={"a","b"};
     int p[2]={1,0};
     int t[2]={0,0};
     sql.setCreateTableInfo("table",2,n,p,t);
-    
     api->dealCmd(sql);
+    
+    //insert
     sql.clear();
     sql.sqlType=2;
     std::string s="1";
@@ -58,11 +60,12 @@ int main(int argc, const char * argv[]) {
     s="2";
     sql.setcolValue(s);
     sql.tablename="table";
-    
     api->dealCmd(sql);
-   // sql.sqlType=1;
-    
+//delete
+    // sql.sqlType=1;
    // api->dealCmd(sql);
+    
+    //select
     sql.sqlType=0;
     sql.setSelectInfo("*");
     sql.tablename="table";

@@ -221,13 +221,15 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
 }
 
 void BPlusTree::Link_Leaf(){
-    std::vector<IndexBlock* > link;
+    std::vector<IndexBlock* > link(0);
     std::queue<IndexBlock* > q;
+    while (!q.empty()) q.pop();
     IndexBlock* cur;
     q.push(root);
     while (!q.empty()){
         cur = q.front();
         q.pop();
+        if (cur==NULL) continue;
         if (cur->NodeType == _leaf_type){
             link.push_back(cur);
             continue;
@@ -237,6 +239,7 @@ void BPlusTree::Link_Leaf(){
     for (int i=1;i<link.size();i++){
         link[i-1]->set_last_slot(link[i]);
     }
+    if (link.size()==0) return;
     link[link.size()-1]->set_last_slot(NULL);
 }
 
@@ -392,6 +395,7 @@ bool BPlusTree::compare(const slot & s1, const slot & s2){
 //------------------------------------------------------------------------------------------//
 
 void BPlusTree::rebuild(IndexBlock *nownode){
+    if (nownode == NULL) return;
     if (nownode->NodeType == _leaf_type) return;
     for (int i=0;i<=nownode->nowkey;i++){
         for (auto &j: AllNode)
@@ -420,6 +424,7 @@ void BPlusTree::load_BPlusTree(std::string IndexName){
 void BPlusTree::FindBPlusTreeAllNode(IndexBlock *nownode){
     if (nownode == NULL) return;
     AllNode.push_back(*nownode);
+    if (nownode->slots_child.size()==0) return;
     for (int i=0;i<nownode->maxkey;i++){
         FindBPlusTreeAllNode(nownode->slots_child[i]);
     }

@@ -79,13 +79,13 @@ public:
 		conditions.push_back(v);
 	}
 	//tablename,attraneme,attrproperty,attrtype
-	void setCreateTableInfo(std::string s,std::string n[],int p[],int t[]){
+	void setCreateTableInfo(std::string s,int attrnum, std::string n[],int p[],int t[]){
 		std::vector<std::string> v;
 		v.push_back(s);
 		createTableInfo.push_back(v);
 		v.clear();
 		int i = 0;
-		while(n[i]!="")	{
+		while(i<attrnum)	{
 			std::vector<std::string> v;
 			char s1[2],s2[3];
 			sprintf(s1, "%d", p[i]);

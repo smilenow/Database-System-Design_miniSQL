@@ -183,9 +183,9 @@ Recordinfo API::insert(sqlcommand& sql){
                     int AttrType=catalogmanager->getAttrType(sql.tablename, primarykey);
                     Value *v=NULL;
                     switch(AttrType){
-                        case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(2)));break;
-                        case 1:v=new Value(AttrType, (sql.colValue).at(2));break;
-                        case -1:v=new Value(AttrType, std::stof(sql.colValue.at(2)));break;
+                        case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(i)));break;
+                        case 1:v=new Value(AttrType, (sql.colValue).at(i));break;
+                        case -1:v=new Value(AttrType, std::stof(sql.colValue.at(i)));break;
                     }
                     slot s=indexmanager->select(indexname, *v);
                     if(s.block_id==-1){
@@ -218,9 +218,9 @@ Recordinfo API::insert(sqlcommand& sql){
                 int AttrType=catalogmanager->getAttrType(sql.tablename, primarykey);
                 Value *v=NULL;
                 switch(AttrType){
-                    case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(2)));break;
-                    case 1:v=new Value(AttrType, (sql.colValue).at(2));break;
-                    case -1:v=new Value(AttrType, std::stof(sql.colValue.at(2)));break;
+                    case 0:v=new Value(AttrType, std::stoi((sql.colValue).at(i)));break;
+                    case 1:v=new Value(AttrType, (sql.colValue).at(i));break;
+                    case -1:v=new Value(AttrType, std::stof(sql.colValue.at(i)));break;
                 }
                 indexmanager->_insert(indexname, *v, s);
             }
@@ -237,6 +237,12 @@ Recordinfo API::createTable(sqlcommand& sql){
     if((pk=catalogmanager->pkOnTable(tablename))!="No primary key on this table!"){
         // 可以创建空的index吧？
         indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(0), std::vector<slot>(0));
+        
+        sqlcommand tempsql=sqlcommand();
+        tempsql.sqlType=4;
+        tempsql.setCreateIndexInfo(tablename, pk);
+        tempsql.indexname=tablename+"$"+pk;
+        catalogmanager->insertIndex(tempsql);
     }
     return Recordinfo(); // further improve
 }

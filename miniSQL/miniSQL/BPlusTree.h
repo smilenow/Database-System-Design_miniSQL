@@ -76,7 +76,8 @@ public:
     
 public:
     IndexBlock *root;
-    std::vector<IndexBlock> AllNode;
+    std::vector<IndexBlock> AllNode_save;
+    std::vector<IndexBlock> AllNode_load;
 };
 
 #endif /* defined(__miniSQL__BPlusTree__) */

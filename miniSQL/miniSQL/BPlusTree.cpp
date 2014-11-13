@@ -398,7 +398,7 @@ void BPlusTree::rebuild(IndexBlock *nownode){
     if (nownode == NULL) return;
     if (nownode->NodeType == _leaf_type) return;
     for (int i=0;i<=nownode->nowkey;i++){
-        for (auto &j: AllNode)
+        for (auto &j: AllNode_load)
             if (nownode->slots[i].block_id == j.block_id){
                 nownode->slots_child[i] = &j;
                 rebuild(&j);
@@ -407,15 +407,15 @@ void BPlusTree::rebuild(IndexBlock *nownode){
 }
 
 void BPlusTree::load_BPlusTree(std::string IndexName){
-    AllNode.clear();
-    AllNode = buffermanager->load_tree(IndexName);
-    for (auto &i : AllNode){
-        for (auto &j : i.slots_child) delete j;
+    AllNode_load.clear();
+    AllNode_load = buffermanager->load_tree(IndexName);
+    for (auto &i : AllNode_load){
+//        for (auto &j : i.slots_child) delete j;
         i.slots_child.clear();
         i.slots_child.resize(i.maxkey);
         for (auto &j: i.slots_child) j = NULL;
     }
-    root = &AllNode[0];
+    root = &AllNode_load[0];
     rebuild(root);
     Link_Leaf();
 }
@@ -423,7 +423,7 @@ void BPlusTree::load_BPlusTree(std::string IndexName){
 
 void BPlusTree::FindBPlusTreeAllNode(IndexBlock *nownode){
     if (nownode == NULL) return;
-    AllNode.push_back(*nownode);
+    AllNode_save.push_back(*nownode);
     if (nownode->slots_child.size()==0) return;
     for (int i=0;i<nownode->maxkey;i++){
         FindBPlusTreeAllNode(nownode->slots_child[i]);
@@ -431,7 +431,10 @@ void BPlusTree::FindBPlusTreeAllNode(IndexBlock *nownode){
 }
 
 void BPlusTree::store_BPlusTree(){
-    AllNode.clear();
+    AllNode_save.clear();
     FindBPlusTreeAllNode(root);
-    buffermanager->store_tree(root->IndexName, AllNode);
+    for (auto &i:AllNode_save)
+        for (auto &j:i.slots_child) j = NULL;
+    buffermanager->store_tree(root->IndexName, AllNode_save);
+    AllNode_save.clear();
 }

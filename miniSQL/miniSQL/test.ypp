@@ -115,7 +115,7 @@ line	: create_table ';'	{
 		//sql.getcolValue();
 		reset();
 	}
-	| EXECFILE FILENAME ';' {
+	| EXECFILE STRING ';' {
 		const char* path=$2;
 		FILE *fp=fopen(path,"r");
 		if(fp==NULL)	printf("cannot open file %s\n", $2);
@@ -174,7 +174,7 @@ line	: create_table ';'	{
 		//printf("%s",sql.getIndexn().c_str());
 		reset();
 	}
-	| line EXECFILE FILENAME ';' {
+	| line EXECFILE STRING ';' {
 		const char* path=$3;
 		FILE *fp=fopen(path,"r");
 		if(fp==NULL)	printf("cannot open file %s\n", $3);
@@ -196,7 +196,7 @@ valuelist	: value {sql.setcolValue($1);}
 value : STRING {attrt[attrcount++]=strlen($1);$$=$1;}
 	//| number {char s[30];sprintf(s, "%f", $1);$$=s;}
 	| intnum {attrt[attrcount++]=0;char s[30];sprintf(s, "%d", $1);$$=s;}
-	| fnum {attrt[attrcount++]=-1;char s[30];sprintf(s, "%f", $1);$$=s;}
+| fnum {attrt[attrcount++]=-1;char s[30];sprintf(s, "%f", $1);$$=s;}
 	;
 
 select_statement	: SELECT '*' FROM tablename where_clause	{sql.setSelectInfo("*");}	
@@ -291,14 +291,11 @@ void yyerror(const char *s)
 		tmp2=yytext;
 		if(strcmp(yytext,";")&&strcmp(s,"Unterminated string")) while((c=yylex())!=';');
 		if(strcmp(s,"Char is defined too long or too short!"))
-       printf("%s near '%s'\n",s,yytext);
+            printf("%s near '%s'\n",s,tmp2.c_str());
        else
-       	printf("%s\n",s);
-        //if(strcmp(yytext,";")&&strcmp(s,"Unterminated string"))
-        //while((c=yylex()!=';')&&c!=EOF);
+            printf("%s\n",s);
         sql.clear();
         reset();
-        //yyparse();
 }
 void prompt(){
 	printf(">>> ");
@@ -309,7 +306,7 @@ bool checkLexeme(std::string s){
 		bool f=true;
 		if(!catalogmanager->TableExists(sql.getTablen())) {
 			printf("Table doesn't exist!\n");
-			f=false;
+            return false;
 		}
 		std::vector<std::vector<std::string> > v=sql.getconditions();
 		std::vector<std::vector<std::string> >::iterator iter;
@@ -353,7 +350,7 @@ bool checkLexeme(std::string s){
 		bool f=true;
 		if(!catalogmanager->TableExists(sql.getTablen())) {
 			printf("Table doesn't exist!\n");
-			f=false;
+            return false;
 		}
 		//std::cout<< "inserted "<<attrcount<<std::endl;
 		int c=catalogmanager->AttrCount(tablen);
@@ -364,7 +361,7 @@ bool checkLexeme(std::string s){
 		//std::vector<int> tablet[32];
 		//tablet=cm->getAllAttrType(tablen);
 		for(int i=0;i<c;i++){
-			if(attrt[i]!=catalogmanager->getAllAttrType(tablen)[i]&&!(attrt[i]==0&&catalogmanager->getAllAttrType(tablen)[i]==-1)&&!(attrt[i]==-1&&catalogmanager->getAllAttrType(tablen)[i]==0)) 
+			if(attrt[i]!=catalogmanager->getAllAttrType(tablen)[i]&&!(attrt[i]==0&&catalogmanager->getAllAttrType(tablen)[i]==-1)) 
 			{	
 				printf("Attribute type doesn't fit!\n");
 				f=false;
@@ -421,12 +418,6 @@ bool checkLexeme(std::string s){
 	return false;
 }
 
-// bool exists(std::string s0,std::string s1,std::string s2){
-// 	if(s0=="table")	return cm->TableExists(s1);
-// 	if(s0=="attr")	return cm->AttrExists(s1,s2);
-// 	if(s0=="index")	return cm->IndexExists(s1);
-// 	return true;
-// }
 void execute(std::string s){
 	if(s=="select"){
 		sql.sqlType=0;

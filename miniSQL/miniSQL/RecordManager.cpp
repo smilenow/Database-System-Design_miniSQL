@@ -8,6 +8,8 @@
 
 #include "RecordManager.h"
 
+#define EPS 1e-10
+
 void RecordManager::ReturnRes(Row &tuple, Result &results, std::vector<int> ColToReturn){
     Row nowrow;
     for (auto &i : ColToReturn)
@@ -27,7 +29,7 @@ bool RecordManager::check(Row &tuple, std::vector<Attribute> &attrs, std::vector
             }
         }
         // change i[1] op into int type : == > >= < <= <>
-        if (!i[1].compare("==")) cond_type = 1;
+        if (!i[1].compare("=")) cond_type = 1;
         else if (!i[1].compare(">")) cond_type = 2;
         else if (!i[1].compare(">=")) cond_type = 3;
         else if (!i[1].compare("<")) cond_type = 4;
@@ -48,21 +50,21 @@ bool RecordManager::check(Row &tuple, std::vector<Attribute> &attrs, std::vector
                     default: break;
                 }
             }
-            break;
+                break;
             case -1:{               // float
                 float v1 = atof(tuple.cols[pos].c_str());
                 float v2 = atof(i[2].c_str());
                 switch (cond_type){
-                    case 1: if (v1!=v2) return false; break;
+                    case 1: if (fabs(v1-v2)>EPS) return false; break;
                     case 2: if (v1<=v2) return false; break;
                     case 3: if (v1<v2) return false; break;
                     case 4: if (v1>=v2) return false; break;
                     case 5: if (v1>v2) return false; break;
-                    case 6: if (v1==v2) return false; break;
+                    case 6: if (fabs(v1-v2)<EPS) return false; break;
                     default: break;
                 }
             }
-            break;
+                break;
             case 1:{                // string
                 std::string v1 = tuple.cols[pos];
                 std::string v2 = i[2];
@@ -76,7 +78,7 @@ bool RecordManager::check(Row &tuple, std::vector<Attribute> &attrs, std::vector
                     default: break;
                 }
             }
-            break;
+                break;
         }
     }
     return true;
@@ -95,13 +97,13 @@ Recordinfo RecordManager::write(RecordBlock &rblock, int j, int tuple_Len, std::
                 memcpy(rblock.content+j*tuple_Len+p, &x, sizeof(int));
                 p += sizeof(int);
             }
-            break;
+                break;
             case -1:{               // float
                 float x = atof(colValue[i].c_str());
                 memcpy(rblock.content+j*tuple_Len+p, &x, sizeof(float));
                 p += sizeof(float);
             }
-            break;
+                break;
             case 1:{
                 str = colValue[i];
                 if ((str.length())>attrs[i].length)
@@ -114,13 +116,13 @@ Recordinfo RecordManager::write(RecordBlock &rblock, int j, int tuple_Len, std::
                 memcpy(rblock.content+j*tuple_Len+p, str.c_str(), attrs[i].length+1);
                 p += attrs[i].length+1;
             }
-            break;
+                break;
             default: break;
         }
     }
     rblock.content[j*tuple_Len]=used;
     rblock.is_dirty = true;
-    return Recordinfo(true,"Insertion succeeded",results,1);
+    return Recordinfo(true,"",results,1);
 }
 
 void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::vector<Attribute> &attrs, Row &tuple){
@@ -140,7 +142,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 ss << x;
                 tuple.cols.push_back(ss.str());
             }
-            break;
+                break;
             case -1:{               // float
                 float x;
                 memcpy(&x, rblock.content+j*tuple_Len+p, sizeof(float));
@@ -149,7 +151,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 ss << x;
                 tuple.cols.push_back(ss.str());
             }
-            break;
+                break;
             case 1:{                // string
                 memcpy(ch, rblock.content+j*tuple_Len+p, i.length+1);
                 p += i.length+1;
@@ -165,7 +167,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 str += "\0";
                 tuple.cols.push_back(str);
             }
-            break;
+                break;
             default: break;
         }
     }
@@ -242,13 +244,13 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
         }
     }
     
-    std::string message = "Selection succeeded.";
-    if (num==0) {successful=false; message="The result is null.";}
+    std::string message = "";
+    if (num==0) {successful=true; message="The result is null.";}
     return Recordinfo(successful, message, res, num);
 }
 
 Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<slot> slots){
-
+    
     std::vector<Attribute> attrs = table.AttrList;              // 表的属性
     std::string TableName = table.name;                         // 表的名字
     std::vector<std::vector<std::string> > conditions = sql.getconditions();    // 查询条件
@@ -284,7 +286,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                     num++;
                 }
             }
-            buffermanager->storeBlock(TableName,nowblock);
+           // buffermanager->storeBlock(TableName,nowblock);
         }
     }
     else {
@@ -303,7 +305,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                         successful = true;
                     }
                 }
-            buffermanager->storeBlock(TableName,nowblock);
+           // buffermanager->storeBlock(TableName,nowblock);
         }
     }
     
@@ -338,7 +340,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
                     nowblock->content[j*tupleLen]=used;
                     nowblock->is_dirty = true;
                     nowblock->nowcontentsize += tupleLen;
-                    buffermanager->storeBlock(TableName,nowblock);
+                  //  buffermanager->storeBlock(TableName,nowblock);
                     block_id = i;
                     record_id = j;
                     return nowrinfo;
@@ -349,7 +351,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     }
     
     // 循环完代表写不下了
-//    RecordBlock nowblock(i,TableName.c_str());
+    //    RecordBlock nowblock(i,TableName.c_str());
     RecordBlock *nowblock = dynamic_cast<RecordBlock*>(buffermanager->newBlock(DB, TableName));
     nowrinfo = write(*nowblock, 0, tupleLen, attrs, colValue);
     if (nowrinfo.getSucc()){
@@ -358,7 +360,7 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
         nowblock->content[0] = used;
         block_id = i;
         record_id = 0;
-//        buffermanager->storeBlock(TableName,nowblock);
+        //        buffermanager->storeBlock(TableName,nowblock);
         return nowrinfo;
     }
     

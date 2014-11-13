@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <sstream>
+#include <cmath>
 #include "Base.h"
 #include "Block.h"
 #include "BufferManager.h"

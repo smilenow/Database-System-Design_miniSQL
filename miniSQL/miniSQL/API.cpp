@@ -261,10 +261,29 @@ Recordinfo API::createIndex(sqlcommand& sql){
 	std::string tablename=sql.createIndexInfo[1];
     std::string indexname=sql.createIndexInfo[0];
     int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);
-    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>());
-    
     catalogmanager->insertIndex(sql);
-        return Recordinfo(); // further improve
+    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>());
+    // insert all records to index
+    sqlcommand tempsql=sqlcommand();
+    tempsql.sqlType=0;
+    tempsql.selectInfo=std::vector<std::string>();
+    tempsql.selectInfo.push_back(sql.createIndexInfo[2]);
+    tempsql.tablename=tablename;
+    tempsql.conditions=std::vector<std::vector<std::string> >();
+    Table temptable=catalogmanager->getTable(tablename);
+    std::vector<slot> tempslot=std::vector<slot>();
+    Recordinfo result=recordmanager->Select_Record(tempsql, temptable, 0, tempslot);
+    for(int i=0;i<tempslot.size();i++){
+        Value v;
+        switch(attrtype){
+            case 0:v=Value(attrtype, std::stoi(result.res.rows[i].cols[0]));break;
+            case 1:v=Value(attrtype, result.res.rows[i].cols[0]);break;
+            case -1:v=Value(attrtype, std::stof(result.res.rows[i].cols[0]));break;
+        }
+        indexmanager->_insert(indexname, v, tempslot[i]);
+    }
+    
+    return Recordinfo(); // further improve
 }
 
 // turn to Catalog find all index and
@@ -274,6 +293,15 @@ Recordinfo API::createIndex(sqlcommand& sql){
 Recordinfo API::dropTable(sqlcommand& sql){
     std::string tablename=sql.tablename;
     
+    // delete all records
+    sqlcommand tempsql=sqlcommand();
+    tempsql.sqlType=1;
+    tempsql.conditions=std::vector<std::vector<std::string> >();
+    tempsql.tablename=sql.tablename;
+    Table temptable=catalogmanager->getTable(sql.tablename);
+    recordmanager->Delete_Record(tempsql, temptable, 0, std::vector<slot>());
+    
+    // delete all indexes
     for(int i=0; i<catalogmanager->AttrCount(tablename); i++){
         std::string attrname=catalogmanager->getAttrName(tablename, i);
         if(catalogmanager->hasIndex(tablename, attrname)){
@@ -281,6 +309,7 @@ Recordinfo API::dropTable(sqlcommand& sql){
             catalogmanager->dropIndex(catalogmanager->getIndexName(tablename, attrname));
         }
     }
+    // delete catalog
     catalogmanager->dropTable(sql.tablename);
         return Recordinfo(); // further improve
 }

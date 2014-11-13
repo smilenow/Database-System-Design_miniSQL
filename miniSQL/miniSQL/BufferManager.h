@@ -58,7 +58,7 @@ public:
     IndexCatalogBlock* newIndexCatalogBlocks();
 
 	std::vector<IndexBlock> load_tree(std::string indexname);
-	bool store_tree(std::string indexname, std::vector<IndexBlock>& tree);
+	bool store_tree(std::string indexname, std::vector<IndexBlock> tree);
 	bool delete_tree(std::string indexname);
 
 public:

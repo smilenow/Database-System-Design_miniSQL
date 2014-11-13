@@ -52,7 +52,7 @@ BufferManager::BufferManager(){
     memset(reference_bit, false, sizeof(reference_bit));
 	memset(pin_bit, false, sizeof(pin_bit));
 	// filename?
-	// LRU();
+    // LRU();
 }
 
 bool BufferManager::is_full(){
@@ -80,7 +80,7 @@ void* BufferManager::clock_LRU(void *arg){
 	while(1){
 		if(pin_bit[reference_bit_count]==false)
 			reference_bit[reference_bit_count]=0;
-		for(int i=0; i<1000; i++);			// time-delay, should modify the argument in order to timing
+		for(int i=0; i<10000; i++);			// time-delay, should modify the argument in order to timing
 		reference_bit_count++;
 	}
 //    BufferManager* new_arg=(BufferManager*)arg;
@@ -130,7 +130,8 @@ void BufferManager::unpin_block(int block_n){
 
 // 下面三个根据buffer中的位置block_n写回不同的block
 // 下面三个可以合并成一个，但尚不确定
-// 这三个write会erase filename, clear is_dirty, 并且delete指针, block_number--, 其他不动
+// 这三个write会erase filename, clear is_dirty, 并且delete指针, 其他不动
+// 修改block_number--
 bool BufferManager::write_recordblock(int block_n){
 	int fd;
 	char fullname[2*max_name_length];
@@ -146,11 +147,12 @@ bool BufferManager::write_recordblock(int block_n){
     }
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
-        return false;
+		return false;
     }
 	if(close(fd)==-1)
 		return false;
 	delete buffer[block_n];
+    buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
 	return true;
@@ -171,14 +173,15 @@ bool BufferManager::write_catalogblock(int block_n){
     }
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
-		return false;
+        return false;
     }
 	if(close(fd)==-1)
 		return false;
 	delete buffer[block_n];
+    buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
-    return true;
+	return true;
 }
 
 bool BufferManager::write_indexblock(int block_n){
@@ -196,17 +199,18 @@ bool BufferManager::write_indexblock(int block_n){
     }
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
-		return false;
+        return false;
     }
 	if(close(fd)==-1)
 		return false;
 	delete buffer[block_n];
+    buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
 	return true;
 }
 
-// 根据LRU写回一个block，修改block_number--
+// 根据LRU写回一个block
 int BufferManager::write_block(){
 	while(1){
 		if(reference_bit[reference_bit_count]==false && pin_bit[reference_bit_count]==false){
@@ -231,11 +235,10 @@ int BufferManager::write_block(){
 					break;
 				}
 			}
-			block_number--;
 			return reference_bit_count;
 		}
 		else
-			for(int i=0; i<100000; i++);
+			for(int i=0; i<10000; i++);
 	}
 }
 
@@ -326,7 +329,7 @@ int BufferManager::get_block_number(int type, std::string fname){
 		strcpy(filename, "/Users/Kael/dsd/catalog/");
 		strcat(filename, fname.c_str());
 	}
-    if((fd=open(filename, O_RDWR|O_APPEND|O_CREAT, 0777))<0){
+    if((fd=open(filename, O_RDWR))<0){
     	close(fd); //????
     	return 0;
         // printf("------%d\n", errno);
@@ -404,7 +407,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	// first find in buffer
 	// 可以优化
 	if(type==DB){
-		for(int i; i<Buffer_Capacity; i++){
+		for(int i=0; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==DB){
                 std::map<int, std::string>::iterator it;
 				it=filename.find(i);
@@ -418,7 +421,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	}
 	else if(type==IB){
 //		tablename=tablename+"$"+indexname;
-		for(int i; i<Buffer_Capacity; i++){
+		for(int i=0; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==IB){
                 std::map<int, std::string>::iterator it;
 				it=filename.find(i);
@@ -513,6 +516,11 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 	reference_bit[block_n]=true;
 	block_number++;
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
+    if(type==IB){
+        IndexBlock *ib=new IndexBlock(*dynamic_cast<IndexBlock*>(buffer[block_n]));
+        storeBlock(tablename, buffer[block_n]);
+        return ib;
+    }
 	return buffer[block_n];
 } 
 
@@ -520,25 +528,13 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
 	std::vector<IndexBlock> tree;
 	int n=get_block_number(IB, indexname);
-	char fullname[2*max_name_length];
-	int fd;
-	// int offset;
-
-	strcpy(fullname, "/Users/Kael/dsd/index/");
-	strcat(fullname, indexname.c_str());
-	fd=open(fullname, O_RDONLY);
-    IndexBlock* i=new IndexBlock();	// 可能要用指针？
+    
     for(int j=0; j<n; j++){
-		read(fd, i, block_size);
-        IndexBlock kk = *i;
-//        for (int slnum = 0; slnum<kk.maxkey; slnum++) kk.slots_child[slnum]=NULL;
-        for (auto &slnum:kk.slots_child) slnum = NULL;
-		tree.push_back(kk);
+        IndexBlock *ib=dynamic_cast<IndexBlock *>(getBlock(IB, indexname, j));
+        tree.push_back(*ib);
+        storeBlock(indexname, ib);
 	}
-    i = NULL;
-    delete i;
-	close(fd);
-	return tree;
+    return tree;
 }
 
 bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& tree){
@@ -551,13 +547,8 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& t
 	strcat(fullname, indexname.c_str());
     remove(fullname);
 	fd=open(fullname, O_WRONLY|O_CREAT, 0777);
-	 IndexBlock* ib;	// 可能要用指针？
-    int count=0;
+    // lseek?
 	for(std::vector<IndexBlock>::iterator j=tree.begin(); j!=tree.end(); j++){
-//		IndexBlock* ib=new IndexBlock();
-//        j->block_id=count++;
-//        for (int slnum = 0; slnum<(*j).maxkey; slnum++) (*j).slots_child[slnum]=NULL;
-        for (auto &i:(*j).slots_child) i = NULL;
         ib=&(*j);
 		write(fd, ib, block_size);
 //        delete ib;

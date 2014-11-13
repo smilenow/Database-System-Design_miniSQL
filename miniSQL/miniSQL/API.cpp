@@ -98,8 +98,8 @@ Recordinfo API::select(sqlcommand& sql){
         else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="==") s.push_back(indexmanager->select((*conditioni).at(0), *v));
+        else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select((*conditioni).at(0), *v));
         if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
             delete v;
             return Recordinfo(false, "Cannot find the record!", Result(), 0);
@@ -151,8 +151,8 @@ Recordinfo API::del(sqlcommand& sql){
         else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
         else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="!=") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="==") s.push_back(indexmanager->select((*conditioni).at(0), *v));
+        else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
+        else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select((*conditioni).at(0), *v));
         if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
             delete v;
             return Recordinfo(false, "Cannot find the record!", Result(), 0);

@@ -537,7 +537,7 @@ std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
     return tree;
 }
 
-bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& tree){
+bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tree){
 	get_block_number(IB, indexname);
 	char fullname[2*max_name_length];
 	int fd;
@@ -548,6 +548,7 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock>& t
     remove(fullname);
 	fd=open(fullname, O_WRONLY|O_CREAT, 0777);
     // lseek?
+    IndexBlock *ib;
 	for(std::vector<IndexBlock>::iterator j=tree.begin(); j!=tree.end(); j++){
         ib=&(*j);
 		write(fd, ib, block_size);

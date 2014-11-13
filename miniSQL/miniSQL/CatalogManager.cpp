@@ -681,12 +681,12 @@ Table CatalogManager::getTable(std::string tablename){
     
     //tablen, attrn, attrp, attrt, index
     tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3+1;
-    //blockLen = (contentsize) / tupleLen;
+    blockLen = (contentsize) / tupleLen;
     int ii=0;
     size = buffermanager->getAttrCatalogBlocksNumber();
     for(int i=0;i<size;i++){
         AttrCatalogBlock* nowblock = buffermanager->getAttrCatalogBlocks(i);
-        for(int j=0;j<t.AttrNum;j++)
+        for(int j=0;j<blockLen;j++)
             if (nowblock->content[j*tupleLen]==used){
                 std::string s1;
                 s1=_memcpy(j*tupleLen+1,nowblock);
@@ -707,8 +707,10 @@ Table CatalogManager::getTable(std::string tablename){
                     memcpy(&attr.datatype, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2+sizeof(int), sizeof(int));
                     attrlist.push_back(attr);
                     ii++;
+                     if(ii==t.AttrNum) break;
                 }
             }
+                            if(ii==t.AttrNum) break;
     }
     t.AttrList=attrlist;
     return t;

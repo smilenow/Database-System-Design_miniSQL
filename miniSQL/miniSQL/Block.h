@@ -94,7 +94,7 @@ public:
     // 对两个vetor进行清空
     void clr(){
         key.clear(); slots.clear();
-        for (auto &i: slots_child) delete i;
+        for (auto &i: slots_child) { delete i; i = NULL; }
         slots_child.clear();
     };
     

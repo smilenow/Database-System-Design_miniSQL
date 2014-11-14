@@ -210,7 +210,8 @@ Recordinfo API::insert(sqlcommand& sql){
                 tempsql.sqlType=0;
                 tempsql.conditions={{attrname, "=", sql.colValue[i]}};
                 tempsql.selectInfo={"*"};
-                Recordinfo r=recordmanager->Select_Record(tempsql, table, 0, std::vector<slot>());
+                std::vector<slot> tempslot=std::vector<slot>();
+                Recordinfo r=recordmanager->Select_Record(tempsql, table, 0, tempslot);
                 if(r.successful){
                     result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
                     return result;
@@ -246,7 +247,10 @@ Recordinfo API::createTable(sqlcommand& sql){
     std::string tablename=sql.createTableInfo[0].at(0);
     if((pk=catalogmanager->pkOnTable(tablename))!="No primary key on this table!"){
         // 可以创建空的index吧？
-        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(0), std::vector<slot>(0));
+        int valuecharlen=0;
+        if(catalogmanager->getCharLength(tablename, pk)>0)
+            valuecharlen=catalogmanager->getCharLength(tablename, pk);
+        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(0), std::vector<slot>(0), valuecharlen);
         
         sqlcommand tempsql=sqlcommand();
         tempsql.sqlType=4;
@@ -262,7 +266,10 @@ Recordinfo API::createIndex(sqlcommand& sql){
     std::string indexname=sql.createIndexInfo[0];
     int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);
     catalogmanager->insertIndex(sql);
-    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>());
+    int valuecharlen=0;
+    if(attrtype>0)
+        valuecharlen=catalogmanager->getCharLength(tablename, sql.createIndexInfo[2]);
+    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>(), valuecharlen);
     // insert all records to index
     sqlcommand tempsql=sqlcommand();
     tempsql.sqlType=0;

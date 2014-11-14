@@ -21,6 +21,7 @@ std::string getStrEle(std::string ch){
     str += "\0";
     return str;
 }
+
 int CatalogManager::getAttrType(std::string tablename,std::string attrname){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3+1;
     int blockLen = (contentsize) / tupleLen;
@@ -43,6 +44,31 @@ int CatalogManager::getAttrType(std::string tablename,std::string attrname){
             }
     }
     if(t>0) t=1;
+    return t;
+}
+
+int CatalogManager::getCharLength(std::string tablename,std::string attrname){
+    int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3+1;
+    int blockLen = (contentsize) / tupleLen;
+    int t = 0,size;
+    size = buffermanager->getAttrCatalogBlocksNumber();
+    for(int i=0;i<size;i++){
+        AttrCatalogBlock* nowblock = buffermanager->getAttrCatalogBlocks(i);//???
+        for(int j=0;j<blockLen;j++)
+            if (nowblock->content[j*tupleLen]==used){
+                std::string s1;
+                char s2[namesize];
+                memcpy(&s2, nowblock->content+j*tupleLen+1, sizeof(char)*namesize);
+                for (int i=0;i<namesize;i++) if(s2[i]=='\0') break; else s1+=s2[i];
+                //s1=getStrEle(s1);
+                if(s1==tablename) {
+                    std::string s2=_memcpy(j*tupleLen+1+sizeof(char)*namesize, nowblock);
+                    if(s2==attrname)
+                        memcpy(&t, nowblock->content+j*tupleLen+1+sizeof(char)*namesize*2+sizeof(int), sizeof(int));
+                }
+            }
+    }
+    
     return t;
 }
 std::string _memcpy(int i,AttrCatalogBlock* nowblock){
@@ -90,9 +116,32 @@ int CatalogManager::getAttrType(std::string tablename, int attrindex){
                 }
             }
     }
+    if(t>0) t=1;
     return t;
 }
 
+int CatalogManager::getCharLength(std::string tablename, int attrindex){
+    int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3+1;
+    int blockLen = (contentsize) / tupleLen;
+    int t = 0;
+    int size = buffermanager->getAttrCatalogBlocksNumber();
+    for(int i=0;i<size;i++){
+        AttrCatalogBlock* nowblock = buffermanager->getAttrCatalogBlocks(i);//???
+        for(int j=0;j<blockLen;j++)
+            if (nowblock->content[j*tupleLen]==used){
+                
+                std::string s1;
+                s1=_memcpy(j*tupleLen+1,nowblock);
+                if(s1==tablename) {
+                    int ii;
+                    memcpy(&ii, nowblock->content+j*tupleLen+1+sizeof(char)*namesize*2+sizeof(int)*2, sizeof(int));
+                    if(ii==attrindex)
+                        memcpy(&t, nowblock->content+j*tupleLen+1+sizeof(char)*namesize*2+sizeof(int), sizeof(int));
+                }
+            }
+    }
+    return t;
+}
 std::vector<int> CatalogManager::getAllAttrType(std::string tablename){
     int tupleLen = 2*sizeof(char)*namesize+sizeof(int)*3+1;
     int blockLen = (contentsize) / tupleLen;
@@ -108,6 +157,7 @@ std::vector<int> CatalogManager::getAllAttrType(std::string tablename){
                     //std::string s2=getStrEle(nowblock,j,1+namesize*sizeof(char),tupleLen);
                     int t;
                     memcpy(&t, nowblock->content+j*tupleLen+1+sizeof(char)*namesize*2+sizeof(int), sizeof(int));
+                    if(t>0) t=1;
                     type.push_back(t);
                 }
             }

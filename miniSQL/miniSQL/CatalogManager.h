@@ -41,7 +41,9 @@ public:
     bool AttrExists(std::string attrname,std::string tablename);
     //std::vector<std::string> > getAttrType(std::string tablename);
     int getAttrType(std::string tablename,std::string attrname);
+    int getCharLength(std::string tablename,std::string attrname);
     int getAttrType(std::string tablename, int attrindex);
+    int getCharLength(std::string tablename, int attrindex);
     int AttrCount(std::string tablename);
     bool hasIndex(std::string tablename, std::string attrname);
     bool isPK(std::string tablename, int attrindex);

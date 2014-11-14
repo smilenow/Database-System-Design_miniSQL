@@ -64,7 +64,7 @@ bool BufferManager::is_full(){
 int BufferManager::find_type(Block *block){
 	if(dynamic_cast<RecordBlock*>(block))
 		return DB;
-	if(dynamic_cast<IndexBlock*>(block))
+	if(dynamic_cast<IndexBlock_Buffer*>(block))
 		return IB;
 	if(dynamic_cast<IndexCatalogBlock*>(block))
 		return ICB;
@@ -376,7 +376,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 		buffer[block_n]=new RecordBlock();
 		break;
 		case IB:
-		buffer[block_n]=new IndexBlock();
+		buffer[block_n]=new IndexBlock_Buffer();
 		break;
 		case TCB:
 		buffer[block_n]=new TableCatalogBlock();
@@ -464,7 +464,7 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 
 // 多加一个new block for index
 // 同getBlock/loadBlock
-Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, int AttrType){
+Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, int AttrType, int valuecharlen){
 //	if(type==IB) tablename=tablename+"$"+indexname;
 	int block_n=get_available_block();
     char fullname[3*max_name_length];
@@ -478,7 +478,7 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
             strcat(fullname, (tablename).c_str());
 		break;
 		case IB:
-		buffer[block_n]=new IndexBlock(tablename,bid,NodeType,AttrType);
+		buffer[block_n]=new IndexBlock_Buffer();
             strcpy(fullname, "/Users/Kael/dsd/index/");
             strcat(fullname, (tablename).c_str());
             break;
@@ -517,7 +517,7 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 	block_number++;
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
     if(type==IB){
-        IndexBlock *ib=new IndexBlock(*dynamic_cast<IndexBlock*>(buffer[block_n]));
+        IndexBlock *ib=new IndexBlock(tablename, bid, NodeType, AttrType, valuecharlen);
         storeBlock(tablename, buffer[block_n]);
         return ib;
     }
@@ -530,9 +530,11 @@ std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
 	int n=get_block_number(IB, indexname);
     
     for(int j=0; j<n; j++){
-        IndexBlock *ib=dynamic_cast<IndexBlock *>(getBlock(IB, indexname, j));
-        tree.push_back(*ib);
-        storeBlock(indexname, ib);
+        Block* tempb=getBlock(IB, indexname, j);
+        IndexBlock tempib=
+            IndexBlock_Buffer::IndexBlockBuffer_To_IndexBlock(*dynamic_cast<IndexBlock_Buffer *>(tempb));
+        tree.push_back(tempib);
+        storeBlock(indexname, tempb);
 	}
     return tree;
 }
@@ -551,8 +553,8 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tr
     IndexBlock *ib;
 	for(std::vector<IndexBlock>::iterator j=tree.begin(); j!=tree.end(); j++){
         ib=&(*j);
-		write(fd, ib, block_size);
-//        delete ib;
+        IndexBlock_Buffer tempib=IndexBlock_Buffer::IndexBlock_To_IndexBlockBuffer(*ib);
+		write(fd, &tempib, block_size);
 	}
 	close(fd);
 	return true;

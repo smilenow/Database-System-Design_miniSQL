@@ -8,8 +8,8 @@
 
 #include "IndexManager.h"
 
-void IndexManager::CreateIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot){
-    CurrentBPT.Create_BPlusTree(IndexName, IndexType, data, dataslot);
+void IndexManager::CreateIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot,int valuecharlen){
+    CurrentBPT.Create_BPlusTree(IndexName, IndexType, data, dataslot,valuecharlen);
     CurrentBPT.store_BPlusTree();
 }
 

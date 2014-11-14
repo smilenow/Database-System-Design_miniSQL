@@ -173,7 +173,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
     }
 }
 
-Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<slot> slots){
+Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool indexflag, std::vector<slot>& slots){
     
     std::vector<Attribute> attrs = table.AttrList;              // 表的属性
     std::string TableName = table.name;                         // 表的名字
@@ -237,6 +237,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
                     getOneTuple(*nowblock, j, tupleLen, attrs, nowtuple);
                     if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
                         ReturnRes(nowtuple, res, what_to_select_indexof_attrs);
+                        slots.push_back(slot(i,j));
                         num++;
                         successful = true;
                     }

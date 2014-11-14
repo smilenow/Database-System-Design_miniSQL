@@ -151,7 +151,7 @@ public:
 
 //存放值的类
 class Value{
-private:                    // 用type来区别是哪种类型,由于没有写多态,所以开了三种类型来选择
+public:                    // 用type来区别是哪种类型,由于没有写多态,所以开了三种类型来选择
     int type;               // 1 string 0 int -1 float
     std::string charKey;
     int intKey;

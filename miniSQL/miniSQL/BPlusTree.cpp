@@ -10,12 +10,12 @@
 
 //------------------------------------------------------------------------------------------//
 
-void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot){
+void BPlusTree::Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot, int valuecharlen){
 //    int NewBlockID;
     // buffer 给我申请一个可用的block_id,记为NewBlockID
 //    root = new IndexBlock(IndexName,NewBlockID,_leaf_type,IndexType);
     
-    root = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, IndexName, _leaf_type,IndexType));
+    root = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, IndexName, _leaf_type,IndexType,valuecharlen));
     
     for (int i=0;i<data.size();i++){
         std::pair<Value *,slot *> tmp = find(root, data[i]);
@@ -102,7 +102,7 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
 //            int NewBID_TMP;
             // buffer 给我申请一个可用的block_id
             
-            IndexBlock* tmp = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, nownode->IndexName,_leaf_type,nownode->AttrType));
+            IndexBlock* tmp = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, nownode->IndexName,_leaf_type,nownode->AttrType,nownode->valuecharlen));
             int k = (nownode->maxkey%2==0)?-1:0;
             for (int j=0;j<nownode->maxkey/2;j++){
                 tmp->key[j] = nownode->key[nownode->maxkey/2+j+k];
@@ -117,7 +117,7 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
             
 //            int NewBID_TMP_FA;
             // buffer 给我申请一个可用的block_id
-            IndexBlock* tmpfa = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType));
+            IndexBlock* tmpfa = dynamic_cast<IndexBlock*> (buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType,nownode->valuecharlen));
             tmpfa->nowkey = 2;
             
             tmpfa->slots_child[0]=nownode;
@@ -180,8 +180,8 @@ IndexBlock* BPlusTree::insert(IndexBlock* nownode, Value key,slot keyslot){
                             // buffer 给我申请一个可用的block_id
 //                            IndexBlock * t1 = new IndexBlock(nownode->IndexName,NewBID_TMP_t1,_inner_type,nownode->AttrType);
 //                            IndexBlock * t2 = new IndexBlock(nownode->IndexName,NewBID_TMP_t2,_inner_type,nownode->AttrType);
-                            IndexBlock * t1= dynamic_cast<IndexBlock*>(buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType));
-                            IndexBlock * t2= dynamic_cast<IndexBlock*>(buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType));
+                            IndexBlock * t1= dynamic_cast<IndexBlock*>(buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType,nownode->valuecharlen));
+                            IndexBlock * t2= dynamic_cast<IndexBlock*>(buffermanager->newBlock(IB, nownode->IndexName,_inner_type,nownode->AttrType,nownode->valuecharlen));
                             nownode->NodeType=_inner_type;
                             int j,k;
                             for (j=0;j<nownode->maxkey/2;j++){

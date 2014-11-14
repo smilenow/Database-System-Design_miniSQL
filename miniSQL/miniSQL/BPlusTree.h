@@ -30,7 +30,7 @@ extern BufferManager *buffermanager;
 class BPlusTree{
 public:
     BPlusTree():root(NULL){};
-    void Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot);
+    void Create_BPlusTree(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot,int valuecharlen);
     //
     
     // buffer怎么给？

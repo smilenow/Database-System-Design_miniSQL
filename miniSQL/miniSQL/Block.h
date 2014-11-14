@@ -25,6 +25,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #define block_size 4096
 
@@ -80,11 +81,11 @@ public:
     int NodeType;               // 判断叶子还是非叶子,叶子0非叶子1
     int nowkey;                 // 当前节点拥有的节点数
     int maxkey;                 // 当前节点应该拥有的节点数N
-    int AttrType;               // 索引对应的类型
+    int AttrType,valuecharlen;  // 索引对应的类型
     int split;                  // 判断是否有分裂
 public:
     IndexBlock():Block(),nowkey(0){ init(); };
-    IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType);
+    IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int valuecharlen);
     
     // 析构的时候要把信息写回buffer
     ~IndexBlock();
@@ -94,7 +95,7 @@ public:
     // 对两个vetor进行清空
     void clr(){
         key.clear(); slots.clear();
-        for (auto &i: slots_child) { delete i; i = NULL; }
+        for (auto &i: slots_child) i = NULL;
         slots_child.clear();
     };
     
@@ -114,7 +115,7 @@ public:
     // 计算一个block最大可以存放的key值
     void calc_maxkey(){
         calc_head_size();
-        maxkey = (block_size - head_size) / (sizeof(Value)+sizeof(slot)+sizeof(IndexBlock*));
+        maxkey = (block_size - head_size-1) / (sizeof(slot)+sizeof(IndexBlock*)+sizeof(Value)-sizeof(std::string)+fmax(sizeof(std::string),valuecharlen)+1);
     }
     
     // 获取最后一个slot
@@ -126,6 +127,24 @@ public:
     void set_last_slot(IndexBlock* nowslot_child){
         slots_child[slots_child.size()-1] = nowslot_child;
     }
+};
+
+//------------------------------------------------------------------------------------------//
+
+static const int contentsize_IBB = block_size-sizeof(Block)-5*sizeof(int);
+
+class IndexBlock_Buffer:public Block{
+public:
+    IndexBlock_Buffer():Block(){};
+    IndexBlock_Buffer(const char *Tablename):Block(Tablename){};
+    IndexBlock_Buffer(int block_id):Block(block_id){};
+    IndexBlock_Buffer(int block_id,const char *Tablename):Block(block_id,Tablename){};
+public:
+    static IndexBlock_Buffer IndexBlock_To_IndexBlockBuffer(IndexBlock tmp);
+    static IndexBlock IndexBlockBuffer_To_IndexBlock(IndexBlock_Buffer tmp);
+public:
+    char content[contentsize_IBB];
+    int nowcontentsize,maxkey,type,valuecharlen,indexnamelen;
 };
 
 //------------------------------------------------------------------------------------------//

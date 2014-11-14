@@ -2,7 +2,7 @@
 //  buffermanager.cpp
 //  miniSQL
 //
-//  Created by Kael on 10/18/14.
+//  Created by SmilENow on 10/18/14.
 //  Copyright (c) 2014 Xinyuan Lu. All rights reserved.
 //
 
@@ -31,19 +31,19 @@ int BufferManager::reference_bit_count=0;
 // 创建文件夹、catalog的三个文件，初始化，调用LRU()
 BufferManager::BufferManager(){
 //    // debug结束之后必须要修改！！！！！！！
-//    rmdir("/Users/Kael/dsd");
-	mkdir("/Users/Kael/dsd", 0777);
+//    rmdir("/Users/SmilENow/dsd");
+	mkdir("/Users/SmilENow/dsd", 0777);
 //    printf("%d\n", errno);
-	mkdir("/Users/Kael/dsd/index", 0777);
-	mkdir("/Users/Kael/dsd/data", 0777);
-	mkdir("/Users/Kael/dsd/catalog", 0777);
+	mkdir("/Users/SmilENow/dsd/index", 0777);
+	mkdir("/Users/SmilENow/dsd/data", 0777);
+	mkdir("/Users/SmilENow/dsd/catalog", 0777);
 
 	int fd;
-	fd=open("/Users/Kael/dsd/catalog/indexcatalogblock", O_RDWR|O_CREAT, 0777);
+	fd=open("/Users/SmilENow/dsd/catalog/indexcatalogblock", O_RDWR|O_CREAT, 0777);
 	close(fd);
-	fd=open("/Users/Kael/dsd/catalog/attrcatalogblock", O_RDWR|O_CREAT, 0777);
+	fd=open("/Users/SmilENow/dsd/catalog/attrcatalogblock", O_RDWR|O_CREAT, 0777);
 	close(fd);
-	fd=open("/Users/Kael/dsd/catalog/tablecatalogblock", O_RDWR|O_CREAT, 0777);
+	fd=open("/Users/SmilENow/dsd/catalog/tablecatalogblock", O_RDWR|O_CREAT, 0777);
 	close(fd);
 //	assert(0);
 	block_number=0;
@@ -52,7 +52,7 @@ BufferManager::BufferManager(){
     memset(reference_bit, false, sizeof(reference_bit));
 	memset(pin_bit, false, sizeof(pin_bit));
 	// filename?
-    // LRU();
+    LRU();
 }
 
 bool BufferManager::is_full(){
@@ -82,6 +82,7 @@ void* BufferManager::clock_LRU(void *arg){
 			reference_bit[reference_bit_count]=0;
 		for(int i=0; i<10000; i++);			// time-delay, should modify the argument in order to timing
 		reference_bit_count++;
+        reference_bit_count=reference_bit_count%(Buffer_Capacity-1);
 	}
 //    BufferManager* new_arg=(BufferManager*)arg;
 //    return (void *)new_arg;
@@ -100,21 +101,21 @@ void BufferManager::LRU(){
 // 下面三个创建各自目录下的文件，暂时没有用？
 // void BufferManager::create_data(std::string tablename){
 // 	char fullname[2*max_name_length];
-// 	strcpy(fullname, "/Users/Kael/dsd/data/");
+// 	strcpy(fullname, "/Users/SmilENow/dsd/data/");
 // 	strcat(fullname, tablename.c_str());
 // 	creat(fullname, 0777);
 // }
 
 // void BufferManager::create_catalog(std::string tablename){
 // 	char fullname[2*max_name_length];
-// 	strcpy(fullname, "/Users/Kael/dsd/catalog/");
+// 	strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
 // 	strcat(fullname, tablename.c_str());
 // 	creat(fullname, 0777);
 // }
 
 // void BufferManager::create_index(std::string tablename, std::string indexname){
 // 	char fullname[3*max_name_length];
-// 	strcpy(fullname, "/Users/Kael/dsd/catalog/");
+// 	strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
 // 	tablename=tablename+"$"+indexname;
 // 	strcat(fullname, tablename.c_str());
 // 	creat(fullname, 0777);
@@ -138,7 +139,7 @@ bool BufferManager::write_recordblock(int block_n){
     std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
-	strcpy(fullname, "/Users/Kael/dsd/data/");
+	strcpy(fullname, "/Users/SmilENow/dsd/data/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
     if((fd=open(fullname, O_RDWR))<0){
@@ -165,7 +166,7 @@ bool BufferManager::write_catalogblock(int block_n){
     std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
-	strcpy(fullname, "/Users/Kael/dsd/catalog/");
+	strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
     if((fd=open(fullname, O_RDWR))<0){
@@ -192,7 +193,7 @@ bool BufferManager::write_indexblock(int block_n){
     std::map<int, std::string>::iterator it;
 
 	it=filename.find(block_n);
-	strcpy(fullname, "/Users/Kael/dsd/index/");
+	strcpy(fullname, "/Users/SmilENow/dsd/index/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
     if((fd=open(fullname, O_RDWR))<0){
@@ -217,31 +218,55 @@ bool BufferManager::write_indexblock(int block_n){
 int BufferManager::write_block(){
 	while(1){
 		if(reference_bit[reference_bit_count]==false && pin_bit[reference_bit_count]==false){
-			if(buffer[reference_bit_count]->is_dirty){
+            int n=reference_bit_count;
+			if(buffer[n]->is_dirty){
 				int type=0;
 				Block *block;
-				block=buffer[reference_bit_count];
+				block=buffer[n];
 				type=find_type(block);
 				
 				switch(type){
 					case DB:
-					if(write_recordblock(reference_bit_count)==false)
+					if(write_recordblock(n)==false)
 						assert(0);
 					break;
 					case IB:
-					if(write_indexblock(reference_bit_count)==false)
+					if(write_indexblock(n)==false)
 						assert(0);
 					break;
 					default:
-					if(write_catalogblock(reference_bit_count)==false)
+					if(write_catalogblock(n)==false)
 						assert(0);
 					break;
 				}
 			}
-			return reference_bit_count;
+			return n;
 		}
-		else
-			for(int i=0; i<10000; i++);
+        else{
+            // 检查所有是不是被pin，正好同时实现一定的时间延迟，延迟之后再尝试write
+            bool all_pin=true;
+            for(int i=0; i<Buffer_Capacity; i++){
+                if(!pin_bit[i]){ all_pin=false; break;}
+            }
+            if(all_pin==true){
+                int n=reference_bit_count;
+                int type=0;
+                Block *block;
+                block=buffer[n];
+                type=find_type(block);
+                
+                switch(type){
+                    case DB:
+                        if(write_recordblock(n)==false) assert(0); break;
+                    case IB:
+                        if(write_indexblock(n)==false) assert(0); break;
+                    default:
+                        if(write_catalogblock(n)==false) assert(0); break;
+                }
+                return n;
+            }
+//			for(int i=0; i<10000; i++);
+        }
 	}
 }
 
@@ -321,15 +346,15 @@ int BufferManager::get_block_number(int type, std::string fname){
 
 	switch(type){
 		case DB:
-		strcpy(filename, "/Users/Kael/dsd/data/");
+		strcpy(filename, "/Users/SmilENow/dsd/data/");
 		strcat(filename, fname.c_str());
 		break;
 		case IB:
-		strcpy(filename, "/Users/Kael/dsd/index/");
+		strcpy(filename, "/Users/SmilENow/dsd/index/");
 		strcat(filename, fname.c_str());
 		break;
 		default:
-		strcpy(filename, "/Users/Kael/dsd/catalog/");
+		strcpy(filename, "/Users/SmilENow/dsd/catalog/");
 		strcat(filename, fname.c_str());
 	}
     if((fd=open(filename, O_RDWR))<0){
@@ -356,16 +381,16 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 
 	switch(type){
 		case DB:
-		strcpy(fullname, "/Users/Kael/dsd/data/");
+		strcpy(fullname, "/Users/SmilENow/dsd/data/");
 		strcat(fullname, (tablename).c_str());
 		break;
 		case IB:
 //		tablename=tablename+"$"+indexname;
-		strcpy(fullname, "/Users/Kael/dsd/index/");
+		strcpy(fullname, "/Users/SmilENow/dsd/index/");
 		strcat(fullname, (tablename).c_str());
 		break;
 		default:
-		strcpy(fullname, "/Users/Kael/dsd/catalog/");
+		strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
 		strcat(fullname, (tablename).c_str());
 		break;
 	}
@@ -478,30 +503,30 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 		// 这里真的有必要这样写吗？
 		case DB:
 		buffer[block_n]=new RecordBlock();
-            strcpy(fullname, "/Users/Kael/dsd/data/");
+            strcpy(fullname, "/Users/SmilENow/dsd/data/");
             strcat(fullname, (tablename).c_str());
 		break;
 		case IB:
 		buffer[block_n]=new IndexBlock_Buffer();
-            strcpy(fullname, "/Users/Kael/dsd/index/");
+            strcpy(fullname, "/Users/SmilENow/dsd/index/");
             strcat(fullname, (tablename).c_str());
             break;
 		case TCB:
 		buffer[block_n]=new TableCatalogBlock();
 		pin_bit[block_n]=true;
-            strcpy(fullname, "/Users/Kael/dsd/catalog/");
+            strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
             strcat(fullname, (tablename).c_str());
 		break;
 		case ICB:
 		buffer[block_n]=new IndexCatalogBlock();
 		pin_bit[block_n]=true;
-            strcpy(fullname, "/Users/Kael/dsd/catalog/");
+            strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
             strcat(fullname, (tablename).c_str());
             break;
 		case ACB:
 		buffer[block_n]=new AttrCatalogBlock();
 		pin_bit[block_n]=true;
-            strcpy(fullname, "/Users/Kael/dsd/catalog/");
+            strcpy(fullname, "/Users/SmilENow/dsd/catalog/");
             strcat(fullname, (tablename).c_str());
 		break;
 	}
@@ -549,7 +574,7 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tr
 	int fd;
 	// int offset;
 
-	strcpy(fullname, "/Users/Kael/dsd/index/");
+	strcpy(fullname, "/Users/SmilENow/dsd/index/");
 	strcat(fullname, indexname.c_str());
     remove(fullname);
 	fd=open(fullname, O_WRONLY|O_CREAT, 0777);
@@ -567,7 +592,7 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tr
 
 bool BufferManager::delete_tree(std::string indexname){
 	char fullname[2*max_name_length];
-	strcpy(fullname, "/Users/Kael/dsd/index/");
+	strcpy(fullname, "/Users/SmilENow/dsd/index/");
 	strcat(fullname, indexname.c_str());
 	return remove(fullname);
 	// 析构B+树

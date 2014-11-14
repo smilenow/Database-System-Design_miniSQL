@@ -87,10 +87,14 @@ Recordinfo API::select(sqlcommand& sql){
             else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual(indexname, v);
             else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select(indexname, v));
             // AND
-            for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
-                bool f=false;
-                for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
-                if(f==false)slots.erase(i);
+            if(conditioni==sql.conditions.begin())
+                slots=s;
+            else{
+                for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
+                    bool f=false;
+                    for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
+                    if(f==false)slots.erase(i);
+                }
             }
             // erase conditioni?????
 		}
@@ -139,10 +143,14 @@ Recordinfo API::del(sqlcommand& sql){
             else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual(indexname, v);
             else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select(indexname, v));
             // AND
-            for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
-                bool f=false;
-                for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
-                if(f==false)slots.erase(i);
+            if(conditioni==sql.conditions.begin())
+                slots=s;
+            else{
+                for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
+                    bool f=false;
+                    for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
+                    if(f==false)slots.erase(i);
+                }
             }
             // erase conditioni?????
         }
@@ -249,27 +257,32 @@ Recordinfo API::insert(sqlcommand& sql){
 
 Recordinfo API::createTable(sqlcommand& sql){
     catalogmanager->insertTable(sql);
-    std::string pk;
-    std::string tablename=sql.createTableInfo[0].at(0);
-    if((pk=catalogmanager->pkOnTable(tablename))!="No primary key on this table!"){
-        // 可以创建空的index吧？
-        int valuecharlen=0;
-        if(catalogmanager->getCharLength(tablename, pk)>0)
-            valuecharlen=catalogmanager->getCharLength(tablename, pk);
-        indexmanager->CreateIndex(tablename+"$"+pk, catalogmanager->getAttrType(tablename, pk), std::vector<Value>(0), std::vector<slot>(0), valuecharlen);
-        
-        sqlcommand tempsql=sqlcommand();
-        tempsql.sqlType=4;
-        tempsql.indexname=tablename+"$"+pk;
-        tempsql.setCreateIndexInfo(tablename, pk);
-        catalogmanager->insertIndex(tempsql);
+    Recordinfo result=Recordinfo(true, " ", Result(), 0);
+    std::string tablename=sql.tablename;
+    
+    for(int i=0; i<catalogmanager->AttrCount(tablename); i++){
+        if(sql.createTableInfo[i+1].at(2)=="1"){
+            std::string attrname=sql.createTableInfo[i+1].at(0);
+            std::string indexname=tablename+"$"+attrname;
+            sqlcommand tempsql=sqlcommand();
+            tempsql.sqlType=4;
+            tempsql.createIndexInfo.push_back(indexname);
+            tempsql.createIndexInfo.push_back(tablename);
+            tempsql.createIndexInfo.push_back(attrname);
+        }
     }
-    return Recordinfo(1, "", Result(), 0); // further improve
+    return result;
 }
 
 Recordinfo API::createIndex(sqlcommand& sql){
 	std::string tablename=sql.createIndexInfo[1];
     std::string indexname=sql.createIndexInfo[0];
+    std::string attrname=sql.createIndexInfo[2];
+//    if(catalogmanager->attrname)
+    if(!catalogmanager->isUnique(tablename, attrname)){
+        Recordinfo result=Recordinfo(false, "You can only create an index on unique/primary attribute!", Result(), 0);
+        return result;
+    }
     int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);
     catalogmanager->insertIndex(sql);
     int valuecharlen=0;
@@ -286,12 +299,12 @@ Recordinfo API::createIndex(sqlcommand& sql){
     Table temptable=catalogmanager->getTable(tablename);
     std::vector<slot> tempslot=std::vector<slot>();
     Recordinfo result=recordmanager->Select_Record(tempsql, temptable, 0, tempslot);
-    for(int i=1;i<tempslot.size();i++){
+    for(int i=0;i<tempslot.size();i++){
         Value v;
         switch(attrtype){
-            case 0:v=Value(attrtype, std::stoi(result.res.rows[i].cols[0]));break;
-            case 1:v=Value(attrtype, result.res.rows[i].cols[0]);break;
-            case -1:v=Value(attrtype, std::stof(result.res.rows[i].cols[0]));break;
+            case 0:v=Value(attrtype, std::stoi(result.res.rows[i+1].cols[0]));break;
+            case 1:v=Value(attrtype, result.res.rows[i+1].cols[0]);break;
+            case -1:v=Value(attrtype, std::stof(result.res.rows[i+1].cols[0]));break;
         }
         indexmanager->_insert(indexname, v, tempslot[i]);
     }

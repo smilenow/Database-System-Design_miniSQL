@@ -59,10 +59,22 @@ identifier  {nondigit}({nondigit}|{digit})*
 [\n]	{prompt();}
 
 [-]?{digit}+"."{digit}+	{
-    strcpy(yylval.flVal,yytext);
+    yylval.flVal=atoi(yytext);
+    int i,flag=0;
+    float di=10.0;
+    for(i=0;i<strlen(yytext);i++){
+        if(flag)	{
+         yylval.flVal+=(yytext[i]-'0')/di;
+         di*=10;
+        }
+        if(yytext[i]=='.') flag=1;
+    }
+    //printf("fl=%f",yylval.flVal);
     return fnum;
 }
-[-]?{digit}+	{yylval.intVal=yytext;return intnum;}
+[-]?{digit}+	{
+    yylval.intVal=atoi(yytext);
+    return intnum;}
 [-+*/;(),.\\]	{return yytext[0];}
 {letter}+"."{letter}+ {
     yylval.strVal=(char *)malloc(strlen(yytext)*sizeof(char));

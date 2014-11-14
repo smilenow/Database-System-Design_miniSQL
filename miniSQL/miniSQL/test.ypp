@@ -27,10 +27,11 @@
     void reset();
     void execute(std::string s);
     void attrExist(std::string s);
-    void printRecordInfo(std::string s, Recordinfo r);
+    void printRecordInfo(std::string s, Recordinfo r,bool f);
     bool checkPrimary(std::string s);
     bool exists(std::string s1,std::string s2,std::string s3="");
     std::string primaryAttr;
+    std::string pk;
     
     CatalogManager *catalogmanager;
     RecordManager *recordmanager;
@@ -40,21 +41,21 @@
     
     %}
 
-%union {char *strVal;char *id;char * intVal;char * flVal;char *condition;}
+%union {char *strVal;char *id;int intVal;float flVal;char *condition;}
 %token UNIQUE TABLE SELECT INSERT DROP DELETE INDEX QUIT EXECFILE FROM WHERE CREATE RESET
 %token INTO VALUES ON PRIMARY KEY INT CHAR FLOAT ANND
 %token UNEXPECTED WHITESPACE FEOF
 %token <strVal> STRING FILENAME
 %token <id> identifier
-%token <strVal> intnum
-%token <strVal> fnum
+%token <intVal> intnum
+%token <flVal> fnum
 %left ANND
 %left LE GE NE '>' '<'
 %right '='
 %left '+' '-' '*' '/'
 %type <condition> where_clause condition
-%type <strVal> number
 %type <strVal> operation value
+%type <flVal> number
 %type <id> priattr attrn attrname tablename indexname selectattr
 
 
@@ -116,7 +117,7 @@ line	: create_table ';'	{
 }
 | EXECFILE STRING ';' {
     const char* path=$2;
-    std::string s="/users/sophie/downloads/minisql 7/minisql/";
+    std::string s="/Users/SmilENow/Desktop/Code/DSD/Database-System-Design_miniSQL/miniSQL/miniSQL/";
     char file[50];
     strcpy(file,s.c_str());
     strcat(file,path);
@@ -127,6 +128,11 @@ line	: create_table ';'	{
 }
 | QUIT ';'	{
     printf("Bye~\n");
+    delete api;
+    delete indexmanager;
+    delete catalogmanager;
+    delete recordmanager;
+    delete buffermanager;
     exit(EXIT_SUCCESS);
 }
 | RESET {
@@ -141,6 +147,11 @@ line	: create_table ';'	{
 }
 | line QUIT ';'	{
     printf("Bye~\n");
+    delete api;
+    delete indexmanager;
+    delete catalogmanager;
+    delete recordmanager;
+    delete buffermanager;
     exit(EXIT_SUCCESS);
 }
 | line create_table ';'	{
@@ -214,12 +225,9 @@ valuelist	: value {sql.setcolValue($1);}
 
 value : STRING {attrt[attrcount++]=1;$$=$1;}
 //| number {char s[30];sprintf(s, "%f", $1);$$=s;}
-| intnum {attrt[attrcount++]=0;$$=$1;}
-| fnum {attrt[attrcount++]=-1;
-    $$=$1;}
-//    strcpy($$,s.c_str());}
+| intnum {attrt[attrcount++]=0;char s[30];sprintf(s, "%d", $1);$$=s;}
+| fnum {attrt[attrcount++]=-1;char s[30];sprintf(s, "%f", $1);$$=s;}
 ;
-
 select_statement	: SELECT '*' FROM tablename where_clause	{sql.setSelectInfo("*");}
 | SELECT attrs FROM tablename where_clause	{;}
 ;
@@ -227,7 +235,8 @@ attrs : selectattr
 | attrs ',' selectattr
 ;
 selectattr	: identifier	{sql.setSelectInfo($1);}
-delete_statement	: DELETE attrs FROM tablename where_clause	{;}
+delete_statement	: DELETE FROM tablename where_clause	{;}
+|DELETE attrs FROM tablename where_clause	{;}
 ;
 where_clause	: WHERE condition	{;}
 |/* empty */ {;}
@@ -246,7 +255,6 @@ condition	: attrname operation number
 }
 | condition ANND condition	{;}
 ;
-
 operation	: GE	{strcpy($$,">=");}
 | LE	{strcpy($$,"<=");}
 | NE	{strcpy($$,"<>");}
@@ -283,7 +291,7 @@ data_type	: INT	{attrt[attrcount-1]=0;}
     //char* s;
     //int i = $3;
     //if(atoi($3)>255||atoi($3)<1)	yyerror("Char is defined too long or too short!");
-    attrt[attrcount-1]=1;
+    attrt[attrcount-1]=$3;
 }
 | FLOAT	{attrt[attrcount-1]=-1;}
 ;
@@ -383,10 +391,13 @@ bool checkLexeme(std::string s){
         //std::vector<int> tablet[32];
         //tablet=cm->getAllAttrType(tablen);
         for(int i=0;i<c;i++){
-            if(attrt[i]!=catalogmanager->getAttrType(tablen,i)&&!(attrt[i]==0&&catalogmanager->getAllAttrType(tablen)[i]==-1))
+            int tm=attrt[i];
+            if(tm>0) tm=1;
+//            printf("tm=%d\n",tm);
+            if(tm!=catalogmanager->getAttrType(tablen,i)&&!(tm==0&&catalogmanager->getAllAttrType(tablen)[i]==-1))
             {
-                printf("%d\n",attrt[i]);
-                printf("%d\n",catalogmanager->getAttrType(tablen,i));
+              //  printf("%d\n",tm);
+               // printf("%d\n",catalogmanager->getAttrType(tablen,i));
                 printf("Attribute type doesn't fit!\n");
                 f=false;
             }
@@ -447,43 +458,43 @@ void execute(std::string s){
         sql.sqlType=0;
         sql.tablename=tablen;
         //Select_Record()
-        printRecordInfo("Select",api->select(sql));
+        printRecordInfo("Select",api->select(sql),true);
     }
     if(s=="delete"){
         sql.sqlType=1;
         sql.tablename=tablen;
-        printRecordInfo("Delete",api->del(sql));
+        printRecordInfo("Delete",api->del(sql),false);
     }
     if(s=="insert"){
         sql.sqlType=2;
         sql.tablename=tablen;
-        printRecordInfo("Insert",api->insert(sql));
+        printRecordInfo("Insert",api->insert(sql),false);
     }
     if(s=="createtable"){
         //printf("creating...");
         //create tables according to attrn/p/t & tablen
         sql.sqlType=3;
         sql.setCreateTableInfo(tablen,attrcount,attrn,attrp,attrt);
-        printRecordInfo("Create table",api->createTable(sql));
+        printRecordInfo("Create table",api->createTable(sql),false);
     }
     if(s=="createindex"){
         sql.sqlType=4;
         sql.indexname=indexn;
         sql.setCreateIndexInfo(tablen,attrname);
-        printRecordInfo("Create index",api->createIndex(sql));
+        printRecordInfo("Create index",api->createIndex(sql),false);
     }
     if(s=="droptable"){
         //printf("dropping table\n");
         //return failure reason or success message...
         sql.sqlType=5;
         sql.tablename=tablen;
-        printRecordInfo("Drop table",api->dropTable(sql));
+        printRecordInfo("Drop table",api->dropTable(sql),false);
     }
     if(s=="dropindex"){
         //printf("dropping index\n");
         sql.sqlType=6;
         sql.indexname=indexn;
-        printRecordInfo("Drop index",api->dropIndex(sql));
+        printRecordInfo("Drop index",api->dropIndex(sql),false);
     }
     
 }
@@ -531,10 +542,10 @@ void printResult(Result res){
     }
 }
 
-void printRecordInfo(std::string s,Recordinfo info){
+void printRecordInfo(std::string s,Recordinfo info,bool flag){
     if(info.getSucc()){
         printf("%s succeeded!%s\n",s.c_str(),info.getMessage().c_str());
-        printResult(info.getRes());
+        if(flag) printResult(info.getRes());
     }
     else{
         printf("%s failed!%s\n",s.c_str(),info.getMessage().c_str());
@@ -553,7 +564,7 @@ void reset(){
     indexn="";
     attrname="";
     sql.clear();
-
+    pk="";
     yyparse();
 }
 int main()

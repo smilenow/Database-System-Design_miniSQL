@@ -159,7 +159,7 @@ void RecordManager::getOneTuple(RecordBlock &rblock, int j, int tuple_Len, std::
                 //
                 // 去掉补全的\0
                 int pos = 0;
-                while (ch[pos]!='\0'){
+                while (ch[pos]=='\0'){
                     pos++;
                     if (pos >= i.length) break;
                 }
@@ -225,6 +225,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
                     successful = true;
                 }
             }
+            nowblock = NULL;
         }
     }
     else {
@@ -242,6 +243,7 @@ Recordinfo RecordManager::Select_Record(sqlcommand &sql, Table &table, bool inde
                         successful = true;
                     }
                 }
+            nowblock = NULL;
         }
     }
     
@@ -288,6 +290,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                     num++;
                 }
             }
+            nowblock = NULL;
            // buffermanager->storeBlock(TableName,nowblock);
         }
     }
@@ -308,6 +311,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                         successful = true;
                     }
                 }
+            nowblock = NULL;
            // buffermanager->storeBlock(TableName,nowblock);
         }
     }
@@ -346,11 +350,13 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
                   //  buffermanager->storeBlock(TableName,nowblock);
                     block_id = i;
                     record_id = j;
+                    nowblock = NULL;
                     return nowrinfo;
                 }
-                else return nowrinfo;                       // 这个else有待商榷
+                else { nowblock = NULL; return nowrinfo; }                       // 这个else有待商榷
             }
         }
+        nowblock = NULL;
     }
     
     // 循环完代表写不下了
@@ -364,9 +370,10 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
         block_id = i;
         record_id = 0;
         //        buffermanager->storeBlock(TableName,nowblock);
+        nowblock = NULL;
         return nowrinfo;
     }
-    
+    nowblock = NULL;
     Result res;
     return Recordinfo(false, "Insert Unsucceeded.", res, 0);
 }

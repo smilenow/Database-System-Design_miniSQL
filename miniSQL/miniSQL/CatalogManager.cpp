@@ -294,7 +294,7 @@ bool CatalogManager::isPK(std::string tablename, int attrindex){
                     if(ii==attrindex) {
                         int p;
                         memcpy(&p, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2, sizeof(int));
-                        if(p==2)  return true;
+                        if(p==1)  return true;
                         else return false;
                     }
                 }
@@ -319,7 +319,7 @@ bool CatalogManager::isUnique(std::string tablename, int attrindex){
                     if(ii==attrindex) {
                         int p;
                         memcpy(&p, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2, sizeof(int));
-                        if(p==1)  return true;
+                        if(p==2)  return true;
                         else return false;
                     }
                 }
@@ -345,7 +345,7 @@ bool CatalogManager::isUnique(std::string tablename, std::string attrname){
                     if(s2==attrname) {
                         int p;
                         memcpy(&p, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2, sizeof(int));
-                        if(p==1)  return true;
+                        if(p==2)  return true;
                         else return false;
                     }
                 }
@@ -754,10 +754,11 @@ Table CatalogManager::getTable(std::string tablename){
                         case 1: attr.PK=true;break;
                         case 2: attr.UN=true;break;
                     }
-                    memcpy(&attr.datatype, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2+sizeof(int), sizeof(int));
-                    int l;
-                    if(attr.datatype==1) l=getCharLength(tablename, attr.name);
-                    attr.length=l;
+                    memcpy(&attr.length, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2+sizeof(int), sizeof(int));
+                   // int l;
+                  //  if(attr.datatype>0) l=getCharLength(tablename, attr.name);
+                    if(attr.length>0) attr.datatype=1;
+                    else attr.datatype=attr.length;
                     attrlist.push_back(attr);
                     ii++;
                      if(ii==t.AttrNum) break;

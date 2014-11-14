@@ -64,25 +64,34 @@ IndexBlock_Buffer IndexBlock_Buffer::IndexBlock_To_IndexBlockBuffer(IndexBlock t
 }
 
 IndexBlock IndexBlock_Buffer::IndexBlockBuffer_To_IndexBlock(IndexBlock_Buffer tmp){
-    IndexBlock ret;
+    std::string tmp_IndexName="";
+    int tmp_NodeType,tmp_nowkey,tmp_maxkey,tmp_AttrType,tmp_split;
+    
+    int p=0;
+    memcpy(&tmp_NodeType, tmp.content+p, sizeof(int)); p += sizeof(int);
+    memcpy(&tmp_nowkey, tmp.content+p, sizeof(int)); p += sizeof(int);
+    memcpy(&tmp_maxkey, tmp.content+p, sizeof(int)); p += sizeof(int);
+    memcpy(&tmp_AttrType, tmp.content+p, sizeof(int)); p += sizeof(int);
+    memcpy(&tmp_split, tmp.content+p, sizeof(int)); p += sizeof(int);
+    
+    char ch[256];
+    memcpy(ch, tmp.content+p, (int)tmp.indexnamelen+1);
+    for (int i=0;i<tmp.indexnamelen;i++) tmp_IndexName += ch[i];
+    p += (int)tmp.indexnamelen+1;
+    
+    IndexBlock ret(tmp_IndexName,tmp.block_id,tmp_NodeType,tmp_AttrType,tmp.valuecharlen);
+    ret.NodeType = tmp_NodeType;
+    ret.nowkey = tmp_nowkey;
+    ret.maxkey = tmp_maxkey;
+    ret.AttrType = tmp_AttrType;
+    ret.split = tmp_split;
+    
     ret.block_id = tmp.block_id;
     ret.is_dirty = tmp.is_dirty;
     ret.is_pin = tmp.is_pin;
     ret.is_valid = tmp.is_valid;
     ret.head_size = tmp.head_size;
     for (int i=0;i<32;i++) ret.tablename[i] = tmp.tablename[i];
-    
-    int p=0;
-    memcpy(&ret.NodeType, tmp.content+p, sizeof(int)); p += sizeof(int);
-    memcpy(&ret.nowkey, tmp.content+p, sizeof(int)); p += sizeof(int);
-    memcpy(&ret.maxkey, tmp.content+p, sizeof(int)); p += sizeof(int);
-    memcpy(&ret.AttrType, tmp.content+p, sizeof(int)); p += sizeof(int);
-    memcpy(&ret.split, tmp.content+p, sizeof(int)); p += sizeof(int);
-    
-    char ch[256];
-    memcpy(ch, tmp.content+p, (int)tmp.indexnamelen+1);
-    for (int i=0;i<tmp.indexnamelen;i++) ret.IndexName += ch[i];
-    p += (int)tmp.indexnamelen+1;
     
     ret.key.resize(ret.maxkey);
     ret.slots.resize(ret.maxkey);

@@ -115,7 +115,7 @@ public:
     // 计算一个block最大可以存放的key值
     void calc_maxkey(){
         calc_head_size();
-        maxkey = (block_size - head_size-1) / (sizeof(slot)+sizeof(IndexBlock*)+sizeof(Value)-sizeof(std::string)+fmax(sizeof(std::string),valuecharlen)+1);
+        maxkey = (block_size - head_size + sizeof(std::string) - (int)IndexName.length() - 2 ) / (sizeof(slot)+sizeof(IndexBlock*)+sizeof(Value)-sizeof(std::string)+fmax(sizeof(std::string),valuecharlen)+1);
     }
     
     // 获取最后一个slot

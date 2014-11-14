@@ -141,10 +141,11 @@ bool BufferManager::write_recordblock(int block_n){
 	strcpy(fullname, "/Users/Kael/dsd/data/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-    if((fd=open(fullname, O_RDWR|O_APPEND))<0){
+    if((fd=open(fullname, O_RDWR))<0){
         close(fd);
 		return false;
     }
+    lseek(fd, buffer[block_n]->block_id*block_size, SEEK_SET);
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
 		return false;
@@ -167,10 +168,11 @@ bool BufferManager::write_catalogblock(int block_n){
 	strcpy(fullname, "/Users/Kael/dsd/catalog/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-    if((fd=open(fullname, O_RDWR|O_APPEND))<0){
+    if((fd=open(fullname, O_RDWR))<0){
         close(fd);
 		return false;
     }
+    lseek(fd, buffer[block_n]->block_id*block_size, SEEK_SET);
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
         return false;
@@ -193,10 +195,11 @@ bool BufferManager::write_indexblock(int block_n){
 	strcpy(fullname, "/Users/Kael/dsd/index/");
 	strcat(fullname, (it->second).c_str());
 	buffer[block_n]->is_dirty=false;
-    if((fd=open(fullname, O_RDWR|O_APPEND))<0){
+    if((fd=open(fullname, O_RDWR))<0){
         close(fd);
 		return false;
     }
+    lseek(fd, buffer[block_n]->block_id*block_size, SEEK_SET);
     if(write(fd, buffer[block_n], block_size)==-1){
         close(fd);
         return false;
@@ -380,6 +383,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 		break;
 		case TCB:
 		buffer[block_n]=new TableCatalogBlock();
+//        buffer[block_n]=new Block();
 		break;
 		case ICB:
 		buffer[block_n]=new IndexCatalogBlock();
@@ -579,13 +583,20 @@ int BufferManager::getIndexCatalogBlocksNumber(){
     return get_block_number(ICB, "indexcatalogblock");
 }
 TableCatalogBlock* BufferManager::getTableCatalogBlocks(int block_id){
-    return dynamic_cast<TableCatalogBlock *>(getBlock(TCB, "tablecatalogblock", block_id));
+    Block *b=getBlock(TCB, "tablecatalogblock", block_id);
+    if(dynamic_cast<TableCatalogBlock *>(b)==NULL) assert(0);
+    TableCatalogBlock *tcb=dynamic_cast<TableCatalogBlock *>(b);
+    return tcb;
 }
 AttrCatalogBlock* BufferManager::getAttrCatalogBlocks(int block_id){
-    return (dynamic_cast<AttrCatalogBlock *>(getBlock(ACB, "attrcatalogblock", block_id)));
+    Block *b=getBlock(ACB, "attrcatalogblock", block_id);
+    AttrCatalogBlock *acb=dynamic_cast<AttrCatalogBlock *>(b);
+    return acb;
 }
 IndexCatalogBlock* BufferManager::getIndexCatalogBlocks(int block_id){
-    return (dynamic_cast<IndexCatalogBlock *>(getBlock(ICB, "indexcatalogblock", block_id)));
+    Block *b=getBlock(ICB, "indexcatalogblock", block_id);
+    IndexCatalogBlock *icb=dynamic_cast<IndexCatalogBlock *>(b);
+    return icb;
 }
 void BufferManager::storeTableCatalogBlocks(int block_id, TableCatalogBlock* nowblock){
     nowblock->block_id=block_id;
@@ -600,13 +611,23 @@ void BufferManager::storeIndexCatalogBlocks(int block_id, IndexCatalogBlock* now
     storeBlock("indexcatalogblock", nowblock);
 }
 TableCatalogBlock* BufferManager::newTableCatalogBlocks(){
-    return (dynamic_cast<TableCatalogBlock *>(newBlock(TCB, "tablecatalogblock")));
+//    return (dynamic_cast<TableCatalogBlock *>(newBlock(TCB, "tablecatalogblock")));
+    Block *b=newBlock(TCB, "tablecatalogblock");
+    if(dynamic_cast<TableCatalogBlock *>(b)==NULL) assert(0);
+    TableCatalogBlock *tcb=dynamic_cast<TableCatalogBlock *>(b);
+    return tcb;
 }
 AttrCatalogBlock* BufferManager::newAttrCatalogBlocks(){
-    return (dynamic_cast<AttrCatalogBlock *>(newBlock(ACB, "attrcatalogblock")));
+//    return (dynamic_cast<AttrCatalogBlock *>(newBlock(ACB, "attrcatalogblock")));
+    Block *b=newBlock(ACB, "attrcatalogblock");
+    AttrCatalogBlock *acb=dynamic_cast<AttrCatalogBlock *>(b);
+    return acb;
 }
 IndexCatalogBlock* BufferManager::newIndexCatalogBlocks(){
-    return (dynamic_cast<IndexCatalogBlock *>(newBlock(ICB, "indexcatalogblock")));
+//    return (dynamic_cast<IndexCatalogBlock *>(newBlock(ICB, "indexcatalogblock")));
+    Block *b=newBlock(ICB, "indexcatalogblock");
+    IndexCatalogBlock *icb=dynamic_cast<IndexCatalogBlock *>(b);
+    return icb;
 }
 
 // 要修改的bit：reference, pin, is_dirty, block_number,

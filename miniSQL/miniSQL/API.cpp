@@ -58,112 +58,117 @@ Recordinfo API::select(sqlcommand& sql){
 	// 如果没有，直接交给record？
 	// 可以减少数据传递的overhead
 	bool flag=false;
+    bool indexflag=false;
     std::vector<std::vector<std::string> >::iterator conditioni;
 	Recordinfo result;
-    
+    std::vector<slot> slots;
+    Table table=catalogmanager->getTable(sql.tablename);
+
 	int IndexAttrType=0x7fff;
 
 	for(conditioni=sql.conditions.begin(); conditioni<sql.conditions.end(); conditioni++){
 		flag=catalogmanager->hasIndex(sql.tablename, (*conditioni).at(0));
 		if(flag) {
+            indexflag=true;
+            std::string indexname=catalogmanager->getIndexName(sql.tablename, (*conditioni).at(0));
 			IndexAttrType=catalogmanager->getAttrType(sql.tablename, (*conditioni).at(0));
-			break;
+            Value v;
+            switch(IndexAttrType){
+                case 0:v=Value(IndexAttrType, std::stoi((*conditioni).at(2)));break;
+                case 1:v=Value(IndexAttrType, (*conditioni).at(2));break;
+                case -1:v=Value(IndexAttrType, std::stof((*conditioni).at(2)));break;
+            }
+            // search
+            std::vector<slot> s;
+            if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall(indexname, v);
+            else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual(indexname, v);
+            else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger(indexname, v);
+            else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual(indexname, v);
+            else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual(indexname, v);
+            else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select(indexname, v));
+            // AND
+            for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
+                bool f=false;
+                for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
+                if(f==false)slots.erase(i);
+            }
+            // erase conditioni?????
 		}
 	}
-    
-    // 需要商量
-    Table table=catalogmanager->getTable(sql.tablename);
-    
-	if(!flag) {
-		std::vector<slot> slots;
-		result=recordmanager->Select_Record(sql, table, false, slots);
+	if(!indexflag) {
+		std::vector<slot> s;
+		result=recordmanager->Select_Record(sql, table, false, s);
 	}
-	else{
-		Value *v=NULL;
-		switch(IndexAttrType){
-			case 0:
-			v=new Value(IndexAttrType, std::stoi((*conditioni).at(2)));
-			break;
-			case 1:
-			v=new Value(IndexAttrType, (*conditioni).at(2));
-			break;
-			case -1:
-			v=new Value(IndexAttrType, std::stof((*conditioni).at(2)));
-			break;
-		}
-		IndexManager *indexmanager=new IndexManager();
+    else{
+        result=recordmanager->Select_Record(sql, table, true, slots);
         
-        std::vector<slot> s;
-		if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select((*conditioni).at(0), *v));
-        if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
-            delete v;
-            return Recordinfo(false, "Cannot find the record!", Result(), 0);
-        }
-        result=recordmanager->Select_Record(sql, table, true, s);
-		// 然后开始剩下的暴力获取
-        sql.conditions.erase(conditioni);
-        Recordinfo result2=recordmanager->Select_Record(sql, table, false, s);
-        // and
-        result.AND(result2);
-		delete v;
-	}
+    }
     return result;
 }
 
 Recordinfo API::del(sqlcommand& sql){
     bool flag=false;
-    //	int n=-1;	// 记录第几个是index
+    bool indexflag=false;
     std::vector<std::vector<std::string> >::iterator conditioni;
     Recordinfo result;
+    std::vector<slot> slots;
+    Table table=catalogmanager->getTable(sql.tablename);
+    // For RecordManager
+//    sql.selectInfo.push_back("*");
     
     int IndexAttrType=0x7fff;
     
     for(conditioni=sql.conditions.begin(); conditioni<sql.conditions.end(); conditioni++){
         flag=catalogmanager->hasIndex(sql.tablename, (*conditioni).at(0));
         if(flag) {
+            indexflag=true;
+            std::string indexname=catalogmanager->getIndexName(sql.tablename, (*conditioni).at(0));
             IndexAttrType=catalogmanager->getAttrType(sql.tablename, (*conditioni).at(0));
-            break;
+            Value v;
+            switch(IndexAttrType){
+                case 0:v=Value(IndexAttrType, std::stoi((*conditioni).at(2)));break;
+                case 1:v=Value(IndexAttrType, (*conditioni).at(2));break;
+                case -1:v=Value(IndexAttrType, std::stof((*conditioni).at(2)));break;
+            }
+            // search
+            std::vector<slot> s;
+            if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall(indexname, v);
+            else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual(indexname, v);
+            else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger(indexname, v);
+            else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual(indexname, v);
+            else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual(indexname, v);
+            else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select(indexname, v));
+            // AND
+            for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
+                bool f=false;
+                for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
+                if(f==false)slots.erase(i);
+            }
+            // erase conditioni?????
         }
     }
     
-    // 需要商量
-    Table table=catalogmanager->getTable(sql.tablename);
-    
-    if(!flag) {
-        std::vector<slot> slots;
-        result=recordmanager->Delete_Record(sql, table, false, slots);
+    if(!indexflag) {
+        std::vector<slot> s;
+        result=recordmanager->Delete_Record(sql, table, false, s);
     }
     else{
-        Value *v=NULL;
-        switch(IndexAttrType){
-            case 0:v=new Value(IndexAttrType, std::stoi((*conditioni).at(2)));break;
-            case 1:v=new Value(IndexAttrType, (*conditioni).at(2));break;
-            case -1:v=new Value(IndexAttrType, std::stof((*conditioni).at(2)));break;
+        result=recordmanager->Delete_Record(sql, table, true, slots);
+        // delete record in index
+        for(int i=0; i<catalogmanager->AttrCount(sql.tablename); i++){
+            std::string attrname=catalogmanager->getAttrName(sql.tablename, i);
+            std::string indexname=catalogmanager->getIndexName(sql.tablename, attrname);
+            int indexattrtype=catalogmanager->getAttrType(sql.tablename, attrname);
+            for(int j=1; j<result.res.rows.size(); j++){
+                Value v;
+                switch(indexattrtype){
+                    case 0:v=Value(indexattrtype, std::stoi(result.res.rows.at(j).cols.at(i)));break;
+                    case 1:v=Value(indexattrtype, result.res.rows.at(j).cols.at(i));break;
+                    case -1:v=Value(indexattrtype, std::stoi(result.res.rows.at(j).cols.at(i)));break;
+                }
+                indexmanager->_delete(indexname, v);
+            }
         }
-        
-        std::vector<slot> s;
-        if((*conditioni).at(1)=="<") s=indexmanager->_FindSmall((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<=") s=indexmanager->_FindSmallEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">") s=indexmanager->_FindBigger((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)==">=") s=indexmanager->_FindBiggerEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="<>") s=indexmanager->_FindNotEqual((*conditioni).at(0), *v);
-        else if((*conditioni).at(1)=="=") s.push_back(indexmanager->select((*conditioni).at(0), *v));
-        if(s.size()==0 || (s.size()==1 && s[0].block_id==-1)){
-            delete v;
-            return Recordinfo(false, "Cannot find the record!", Result(), 0);
-        }
-        result=recordmanager->Delete_Record(sql, table, true, s);
-        // 然后开始剩下的暴力获取
-        sql.conditions.erase(conditioni);
-        Recordinfo result2=recordmanager->Select_Record(sql, table, false, s);
-        // and
-        result.AND(result2);
-        delete v;
     }
     return result;
 }
@@ -199,11 +204,12 @@ Recordinfo API::insert(sqlcommand& sql){
                     }
                     slot s=indexmanager->select(indexname, *v);
                     if(s.block_id!=-1){
-                        Recordinfo result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
+                        Recordinfo result=Recordinfo(false, "The primary key value has existed!", Result(), 0);
                         delete v;
                         return result;
                     }
                     delete v;
+                    continue;
                 }
                 // 没有索引直接查询
                 sqlcommand tempsql=sql;
@@ -212,7 +218,7 @@ Recordinfo API::insert(sqlcommand& sql){
                 tempsql.selectInfo={"*"};
                 std::vector<slot> tempslot=std::vector<slot>();
                 Recordinfo r=recordmanager->Select_Record(tempsql, table, 0, tempslot);
-                if(r.successful){
+                if(r.num!=0){
                     result=Recordinfo(false, "The unique key value has existed!", Result(), 0);
                     return result;
                 }
@@ -258,7 +264,7 @@ Recordinfo API::createTable(sqlcommand& sql){
         tempsql.setCreateIndexInfo(tablename, pk);
         catalogmanager->insertIndex(tempsql);
     }
-    return Recordinfo(); // further improve
+    return Recordinfo(1, "", Result(), 0); // further improve
 }
 
 Recordinfo API::createIndex(sqlcommand& sql){
@@ -280,7 +286,7 @@ Recordinfo API::createIndex(sqlcommand& sql){
     Table temptable=catalogmanager->getTable(tablename);
     std::vector<slot> tempslot=std::vector<slot>();
     Recordinfo result=recordmanager->Select_Record(tempsql, temptable, 0, tempslot);
-    for(int i=0;i<tempslot.size();i++){
+    for(int i=1;i<tempslot.size();i++){
         Value v;
         switch(attrtype){
             case 0:v=Value(attrtype, std::stoi(result.res.rows[i].cols[0]));break;
@@ -290,7 +296,7 @@ Recordinfo API::createIndex(sqlcommand& sql){
         indexmanager->_insert(indexname, v, tempslot[i]);
     }
     
-    return Recordinfo(); // further improve
+    return Recordinfo(1, "", Result(), 0); // further improve
 }
 
 // turn to Catalog find all index and
@@ -318,12 +324,12 @@ Recordinfo API::dropTable(sqlcommand& sql){
     }
     // delete catalog
     catalogmanager->dropTable(sql.tablename);
-        return Recordinfo(); // further improve
+    return Recordinfo(1, "", Result(), 0); // further improve
 }
 
 Recordinfo API::dropIndex(sqlcommand& sql){
     catalogmanager->dropIndex(sql.indexname);
     indexmanager->DropIndex(sql.indexname);
-        return Recordinfo(); // further improve
+    return Recordinfo(1, "", Result(), 0); // further improve
     // catalog
 }

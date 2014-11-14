@@ -720,8 +720,8 @@ Table CatalogManager::getTable(std::string tablename){
                     int a,b;
                     memcpy(&a, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2+sizeof(int), sizeof(int));
                     t.RecordLength=a;
-                    std::string pk;//table里需不需要存primary key？
-                    pk=_memcpy(j*tupleLen+1+namesize*sizeof(char)+sizeof(int), nowblock);
+                    //std::string pk;//table里需不需要存primary key？
+//                    pk=_memcpy(j*tupleLen+1+namesize*sizeof(char)+sizeof(int), nowblock);
                     
                     memcpy(&b, nowblock->content+j*tupleLen+1+namesize*sizeof(char), sizeof(int));
                     t.AttrNum=b;
@@ -755,6 +755,9 @@ Table CatalogManager::getTable(std::string tablename){
                         case 2: attr.UN=true;break;
                     }
                     memcpy(&attr.datatype, nowblock->content+j*tupleLen+1+namesize*sizeof(char)*2+sizeof(int), sizeof(int));
+                    int l;
+                    if(attr.datatype==1) l=getCharLength(tablename, attr.name);
+                    attr.length=l;
                     attrlist.push_back(attr);
                     ii++;
                      if(ii==t.AttrNum) break;

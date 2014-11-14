@@ -107,7 +107,7 @@ Recordinfo RecordManager::write(RecordBlock &rblock, int j, int tuple_Len, std::
             case 1:{
                 str = colValue[i];
                 if ((str.length())>attrs[i].length)
-                    return Recordinfo(false, "Insertion failed. And "+attrs[i].name+" is illegal in length.", results, 0);
+                    return Recordinfo(false, " And "+attrs[i].name+" is illegal in length.", results, 0);
                 // 如果string长度少于表定义的长度,补全
                 if ((str.length())<attrs[i].length){
                     for (int k=0;k<attrs[i].length-(int)str.length();k++)
@@ -280,6 +280,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                 Row nowtuple;
                 getOneTuple(*nowblock, record_id, tupleLen, attrs, nowtuple);
                 if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
+                    ReturnRes(nowtuple, res, what_to_select_indexof_attrs);
                     nowblock->content[record_id*tupleLen]=Unused;
                     nowblock->is_dirty = true;
                     nowblock->nowcontentsize -= tupleLen;
@@ -299,6 +300,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                     Row nowtuple;
                     getOneTuple(*nowblock, j, tupleLen, attrs, nowtuple);
                     if (!Exist_Where || (Exist_Where && check(nowtuple, attrs, conditions))){
+                        ReturnRes(nowtuple, res, what_to_select_indexof_attrs);
                         nowblock->content[j*tupleLen]=Unused;
                         nowblock->is_dirty = true;
                         nowblock->nowcontentsize -= tupleLen;

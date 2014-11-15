@@ -2,7 +2,7 @@
 //  buffermanager.cpp
 //  miniSQL
 //
-//  Created by SmilENow on 10/18/14.
+//  Created by Kael on 10/18/14.
 //  Copyright (c) 2014 Xinyuan Lu. All rights reserved.
 //
 

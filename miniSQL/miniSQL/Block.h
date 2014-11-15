@@ -84,7 +84,7 @@ public:
     int AttrType,valuecharlen;  // 索引对应的类型
     int split;                  // 判断是否有分裂
 public:
-    IndexBlock():Block(),nowkey(0){ init(); };
+    IndexBlock():Block(),nowkey(0),IndexName(""),NodeType(0),AttrType(0),valuecharlen(0),split(0){ init(); };
     IndexBlock(std::string IndexName,int block_id,int NodeType,int AttrType,int valuecharlen);
     
     // 析构的时候要把信息写回buffer
@@ -135,10 +135,18 @@ static const int contentsize_IBB = block_size-sizeof(Block)-5*sizeof(int);
 
 class IndexBlock_Buffer:public Block{
 public:
-    IndexBlock_Buffer():Block(){};
-    IndexBlock_Buffer(const char *Tablename):Block(Tablename){};
-    IndexBlock_Buffer(int block_id):Block(block_id){};
-    IndexBlock_Buffer(int block_id,const char *Tablename):Block(block_id,Tablename){};
+    IndexBlock_Buffer():Block(),nowcontentsize(0),maxkey(0),type(0),valuecharlen(0),indexnamelen(0){
+        memset(content, 0, sizeof(content));
+    };
+    IndexBlock_Buffer(const char *Tablename):Block(Tablename),nowcontentsize(0),maxkey(0),type(0),valuecharlen(0),indexnamelen(0){
+        memset(content, 0, sizeof(content));
+    };
+    IndexBlock_Buffer(int block_id):Block(block_id),nowcontentsize(0),maxkey(0),type(0),valuecharlen(0),indexnamelen(0){
+        memset(content, 0, sizeof(content));
+    };
+    IndexBlock_Buffer(int block_id,const char *Tablename):Block(block_id,Tablename),nowcontentsize(0),maxkey(0),type(0),valuecharlen(0),indexnamelen(0){
+        memset(content, 0, sizeof(content));
+    };
 public:
     static IndexBlock_Buffer IndexBlock_To_IndexBlockBuffer(IndexBlock tmp);
     static IndexBlock IndexBlockBuffer_To_IndexBlock(IndexBlock_Buffer tmp);
@@ -154,7 +162,9 @@ const static int contentsize = block_size-sizeof(Block)-sizeof(int);
 //char(64)+int+int*#+char(64)*#+int*#+char(64)
 class TableCatalogBlock:public Block{
 public:
-    TableCatalogBlock():Block(){};
+    TableCatalogBlock():Block(),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
 public:
     char content[contentsize];
     int nowcontentsize;
@@ -162,8 +172,9 @@ public:
 //tablen, attrn, attrp, attrt, attrindex
 class AttrCatalogBlock:public Block{
 public:
-    AttrCatalogBlock():Block(){};
-    
+    AttrCatalogBlock():Block(),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
 public:
     char content[contentsize];
     int nowcontentsize;
@@ -172,7 +183,9 @@ public:
 //char(64)+char(64)+char(64)
 class IndexCatalogBlock:public Block{
 public:
-    IndexCatalogBlock():Block(){};
+    IndexCatalogBlock():Block(),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
 public:
     char content[contentsize];
     int nowcontentsize;
@@ -184,10 +197,18 @@ static const int contentsize_recordmanager = block_size-sizeof(Block)-sizeof(int
 
 class RecordBlock:public Block{
 public:
-    RecordBlock():Block(){};
-    RecordBlock(const char *Tablename):Block(Tablename){};
-    RecordBlock(int block_id):Block(block_id){};
-    RecordBlock(int block_id,const char *Tablename):Block(block_id,Tablename){};
+    RecordBlock():Block(),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
+    RecordBlock(const char *Tablename):Block(Tablename),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
+    RecordBlock(int block_id):Block(block_id),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
+    RecordBlock(int block_id,const char *Tablename):Block(block_id,Tablename),nowcontentsize(0){
+        memset(content, 0, sizeof(content));
+    };
 public:
     char content[contentsize_recordmanager];
     int nowcontentsize;

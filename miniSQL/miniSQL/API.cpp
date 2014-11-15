@@ -261,7 +261,7 @@ Recordinfo API::createTable(sqlcommand& sql){
     std::string tablename=sql.tablename;
     
     for(int i=0; i<catalogmanager->AttrCount(tablename); i++){
-        if(sql.createTableInfo[i+1].at(2)=="1"){
+        if(sql.createTableInfo[i+1].at(1)=="1"){
             std::string attrname=sql.createTableInfo[i+1].at(0);
             std::string indexname=tablename+"$"+attrname;
             sqlcommand tempsql=sqlcommand();
@@ -269,18 +269,19 @@ Recordinfo API::createTable(sqlcommand& sql){
             tempsql.createIndexInfo.push_back(indexname);
             tempsql.createIndexInfo.push_back(tablename);
             tempsql.createIndexInfo.push_back(attrname);
+            createIndex(tempsql, 1);
         }
     }
     return result;
 }
 
-Recordinfo API::createIndex(sqlcommand& sql){
+Recordinfo API::createIndex(sqlcommand& sql, bool flag){
 	std::string tablename=sql.createIndexInfo[1];
     std::string indexname=sql.createIndexInfo[0];
     std::string attrname=sql.createIndexInfo[2];
 //    if(catalogmanager->attrname)
-    if(!catalogmanager->isUnique(tablename, attrname)){
-        Recordinfo result=Recordinfo(false, "You can only create an index on unique/primary attribute!", Result(), 0);
+    if(!catalogmanager->isUnique(tablename, attrname) && !flag){
+        Recordinfo result=Recordinfo(false, "You can only create an index on unique attribute!", Result(), 0);
         return result;
     }
     int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);
@@ -288,7 +289,8 @@ Recordinfo API::createIndex(sqlcommand& sql){
     int valuecharlen=0;
     if(attrtype>0)
         valuecharlen=catalogmanager->getCharLength(tablename, sql.createIndexInfo[2]);
-    indexmanager->CreateIndex(sql.indexname, attrtype, std::vector<Value>(), std::vector<slot>(), valuecharlen);
+    
+    indexmanager->CreateIndex(indexname, attrtype, std::vector<Value>(), std::vector<slot>(), valuecharlen);
     // insert all records to index
     sqlcommand tempsql=sqlcommand();
     tempsql.sqlType=0;

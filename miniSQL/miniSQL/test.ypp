@@ -565,7 +565,7 @@ void reset(){
     attrname="";
     sql.clear();
     pk="";
-    yyparse();
+  //  yyparse();
 }
 int main()
 {
@@ -579,6 +579,9 @@ int main()
     
     //printResult();
     reset();
+    while(1){
+        yyparse();
+    }
     //yyparse ( );
     //delete sql;
     return 0;

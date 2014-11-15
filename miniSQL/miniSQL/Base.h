@@ -32,7 +32,7 @@
 
 class Attribute{
 public:
-    Attribute():PK(false),UN(false),NN(false),ID(false){};
+    Attribute():PK(false),UN(false),NN(false),ID(false),name(""),datatype(0),length(0){};
     
     std::string name;       // 名称
     int datatype;           // 数据类型 (0 int) (-1 float) (正数 char[])
@@ -50,7 +50,7 @@ public:
 
 class Table{
 public:
-    Table(){};
+    Table():name(""),dname(""),AttrNum(0),RecordLength(0),RecordNum(0),size(0){ AttrList.clear(); };
     Table(const Table& that){
         name = that.name;
         dname = that.dname;
@@ -160,11 +160,11 @@ public:                    // 用type来区别是哪种类型,由于没有写多
     
 public:
     // 构造
-    Value():type(0),intKey(0),Valid(false){};
-    Value(int type):type(type),Valid(true){};
-    Value(int type,std::string k):type(type),charKey(k),Valid(true){};
-    Value(int type,int k):type(type),intKey(k),Valid(true){};
-    Value(int type,float k):type(type),floatKey(k),Valid(true){};
+    Value():type(0),intKey(0),charKey(""),floatKey(0.0),Valid(false){};
+    Value(int type):type(type),Valid(true),intKey(0),charKey(""),floatKey(0.0){};
+    Value(int type,std::string k):type(type),charKey(k),Valid(true),intKey(0),floatKey(0.0){};
+    Value(int type,int k):type(type),intKey(k),Valid(true),charKey(""),floatKey(0.0){};
+    Value(int type,float k):type(type),floatKey(k),Valid(true),intKey(0),charKey(""){};
     
     //获取类型属性和相对应的值
     int getType() const { return type; };

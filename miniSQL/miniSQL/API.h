@@ -34,7 +34,7 @@ public:
     Recordinfo del(sqlcommand& sql);
     Recordinfo insert(sqlcommand& sql);
     Recordinfo createTable(sqlcommand& sql);
-    Recordinfo createIndex(sqlcommand& sql);
+    Recordinfo createIndex(sqlcommand& sql, bool flag=false);
     Recordinfo dropTable(sqlcommand& sql);
     Recordinfo dropIndex(sqlcommand& sql);
     Recordinfo wrapTable();

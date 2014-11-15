@@ -38,8 +38,11 @@ int CatalogManager::getAttrType(std::string tablename,std::string attrname){
                 //s1=getStrEle(s1);
                 if(s1==tablename) {
                     std::string s2=_memcpy(j*tupleLen+1+sizeof(char)*namesize, nowblock);
-                    if(s2==attrname)
+                    if(s2==attrname){
                         memcpy(&t, nowblock->content+j*tupleLen+1+sizeof(char)*namesize*2+sizeof(int), sizeof(int));
+                        if (t>0) return 1;
+                        else return t;
+                    }
                 }
             }
     }
@@ -360,6 +363,7 @@ std::string CatalogManager::getAttrName(std::string tablename,int index){
     int ii=0,size;
     std::string s2;
     size = buffermanager->getAttrCatalogBlocksNumber();
+    bool flag = false;
     for(int i=0;i<size;i++){
         AttrCatalogBlock* nowblock = buffermanager->getAttrCatalogBlocks(i);//???
         for(int j=0;j<blockLen;j++)
@@ -369,11 +373,13 @@ std::string CatalogManager::getAttrName(std::string tablename,int index){
                 if(s1==tablename) {
                     if (ii==index) {
                         s2=_memcpy(j*tupleLen+1+sizeof(char)*namesize, nowblock);
-                        
+                        flag = true;
+                        break;
                     }
                     ii++;
                 }
             }
+        if (flag) break;
     }
     return s2;
 }
@@ -710,6 +716,7 @@ Table CatalogManager::getTable(std::string tablename){
     int tupleLen = namesize*sizeof(char)*2+sizeof(int)*2+1;
     int blockLen = (contentsize) / tupleLen;
     int size = buffermanager->getTableCatalogBlocksNumber();
+    bool flag = false;
     for(int i=0;i<size;i++){
         TableCatalogBlock* nowblock = buffermanager->getTableCatalogBlocks(i);
         for(int j=0;j<blockLen;j++)
@@ -725,8 +732,11 @@ Table CatalogManager::getTable(std::string tablename){
                     
                     memcpy(&b, nowblock->content+j*tupleLen+1+namesize*sizeof(char), sizeof(int));
                     t.AttrNum=b;
+                    flag = true;
+                    break;
                 }
             }
+        if (flag) break;
     }
     
     //tablen, attrn, attrp, attrt, index

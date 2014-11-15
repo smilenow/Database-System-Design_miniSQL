@@ -266,6 +266,11 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     long num=0;
     bool successful = false;
     
+    if (NextCanUse.count(TableName)>0){
+        NowNextCanUse = NextCanUse[TableName];
+        NextCanUse.erase(TableName);
+    } else NowNextCanUse = std::vector<slot>(0);
+    
     Row row; // 每一行
     Result res; // 最后的结果
     
@@ -289,6 +294,7 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                     nowblock->nowcontentsize -= tupleLen;
                     successful = true;
                     num++;
+                    NowNextCanUse.push_back(slot(block_id,record_id));
                 }
             }
             nowblock = NULL;
@@ -309,12 +315,15 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
                         nowblock->nowcontentsize -= tupleLen;
                         num++;
                         successful = true;
+                        NowNextCanUse.push_back(slot(i,j));
                     }
                 }
             nowblock = NULL;
            // buffermanager->storeBlock(TableName,nowblock);
         }
     }
+    
+    NextCanUse[TableName] = NowNextCanUse;
     
     std::stringstream ss;
     ss.str("");
@@ -337,10 +346,20 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
     int tupleLen = table.RecordLength + 1;                      // 每个记录长度
     int blockLen = (contentsize_recordmanager) / tupleLen;       // 一个block最多放多少个记录
     
-    int i;
-    for (i=0;i<blocks;i++){
+    if (NextCanUse.count(TableName)>0){
+        NowNextCanUse = NextCanUse[TableName];
+        NextCanUse.erase(TableName);
+    } else NowNextCanUse = std::vector<slot>(0);
+    
+    if (NowNextCanUse.size()>0){
+        slot nowsl = NowNextCanUse.back();
+        NowNextCanUse.pop_back();
+        NextCanUse[TableName] = NowNextCanUse;
+    
+        int i = nowsl.block_id;
         RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,i) );
-        for (int j=0;j<blockLen;j++){
+        int j = nowsl.offset;
+        {
             if (nowblock->content[j*tupleLen]==Unused){          // 找到没有使用过的tuple可以插入记录
                 nowrinfo = write(*nowblock, j, tupleLen, attrs, colValue);
                 if (nowrinfo.getSucc()){                        // 成功写入
@@ -359,8 +378,31 @@ Recordinfo RecordManager::Insert_Record(sqlcommand &sql, Table &table, int &bloc
         nowblock = NULL;
     }
     
-    // 循环完代表写不下了
-    //    RecordBlock nowblock(i,TableName.c_str());
+    // 如果没有可用的,那就找当前block的最后,看能不能写下
+    int i;
+    if (blocks==0) i = 0; else i = blocks-1;
+    for (i;i<blocks;i++){
+        RecordBlock *nowblock = dynamic_cast<RecordBlock*> ( buffermanager->getBlock(DB,TableName,i) );
+        for (int j=0;j<blockLen;j++){
+            if (nowblock->content[j*tupleLen]==Unused){          // 找到没有使用过的tuple可以插入记录
+                nowrinfo = write(*nowblock, j, tupleLen, attrs, colValue);
+                if (nowrinfo.getSucc()){                        // 成功写入
+                    nowblock->content[j*tupleLen]=used;
+                    nowblock->is_dirty = true;
+                    nowblock->nowcontentsize += tupleLen;
+                    //  buffermanager->storeBlock(TableName,nowblock);
+                    block_id = i;
+                    record_id = j;
+                    nowblock = NULL;
+                    return nowrinfo;
+                }
+                else { nowblock = NULL; return nowrinfo; }                       // 这个else有待商榷
+            }
+        }
+        nowblock = NULL;
+    }
+    
+    // 最后一个block也写不下了
     RecordBlock *nowblock = dynamic_cast<RecordBlock*>(buffermanager->newBlock(DB, TableName));
     nowrinfo = write(*nowblock, 0, tupleLen, attrs, colValue);
     if (nowrinfo.getSucc()){

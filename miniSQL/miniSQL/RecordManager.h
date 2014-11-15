@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <cmath>
+#include <map>
 #include "Base.h"
 #include "Block.h"
 #include "BufferManager.h"
@@ -28,7 +29,7 @@ extern BufferManager *buffermanager;
 
 class RecordManager{
 public:
-    RecordManager(){};
+    RecordManager(){ NextCanUse.clear(); NowNextCanUse.clear(); };
     virtual ~RecordManager(){};
     // 查找
     Recordinfo Select_Record(sqlcommand& sql, Table &table, bool indexflag, std::vector<slot>& slots);
@@ -45,6 +46,10 @@ public:
     void getOneTuple(RecordBlock& rblock,int j,int tuple_Len, std::vector<Attribute>& attrs, Row& tuple);
     // 按要求返回结果
     void ReturnRes(Row& tuple, Result& results, std::vector<int> ColToReturn);
+public:
+    // 记录表的下一个可用位置,提高插入效率,从 O(sigma(i^2)) [i from 0 to n]   -->   O(n) , 用于insert和delete
+    std::map<std::string,std::vector<slot>> NextCanUse;
+    std::vector<slot> NowNextCanUse;
 };
 
 #endif /* defined(__miniSQL__RecordManager__) */

@@ -226,8 +226,8 @@ bool BufferManager::write_indexblock(int block_n){
 // 根据LRU写回一个block
 int BufferManager::write_block(){
 	while(1){
-		if(reference_bit[reference_bit_count]==false && pin_bit[reference_bit_count]==false){
-            int n=reference_bit_count;
+        int n=reference_bit_count;
+		if(reference_bit[n]==false && pin_bit[n]==false){
 			if(buffer[n]->is_dirty){
 				int type=0;
 				Block *block;
@@ -347,7 +347,6 @@ bool BufferManager::storeBlock(std::string tablename, Block *block){
 }
 
 // get the number of blocks in a table/index
-// if the file doens't exist, will create one
 int BufferManager::get_block_number(int type, std::string fname){
 	char filename[3*max_name_length];
 	int fd;
@@ -431,7 +430,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
     close(fd);
 	block_number++;
 	buffer[block_n]->is_valid=true;
-	buffer[block_n]->is_pin=false;
+    pin_bit[block_n]=false;
 	buffer[block_n]->is_dirty=false;
 	return;
 }
@@ -444,6 +443,7 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	// first find in buffer
 	// 可以优化
+    
 	if(type==DB){
 		for(int i=0; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==DB){
@@ -512,11 +512,13 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 		// 这里真的有必要这样写吗？
 		case DB:
 		buffer[block_n]=new RecordBlock();
+            pin_bit[block_n]=false;
             strcpy(fullname, "/Users/SmilENow/dsd/data/");
             strcat(fullname, (tablename).c_str());
 		break;
 		case IB:
 		buffer[block_n]=new IndexBlock_Buffer();
+            pin_bit[block_n]=false;
             strcpy(fullname, "/Users/SmilENow/dsd/index/");
             strcat(fullname, (tablename).c_str());
             break;
@@ -556,7 +558,9 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
     if(type==IB){
         IndexBlock *ib=new IndexBlock(tablename, bid, NodeType, AttrType, valuecharlen);
-        storeBlock(tablename, buffer[block_n]);
+        write_indexblock(block_n);
+        reference_bit[block_n]=false;
+        pin_bit[block_n]=false;
         return ib;
     }
 	return buffer[block_n];

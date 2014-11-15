@@ -15,7 +15,7 @@
 #include <vector>
 #include <map>
 
-#define Buffer_Capacity 50
+#define Buffer_Capacity 200
 
 #define DB 1	// DataBlock
 #define IB 2	// IndexBlock

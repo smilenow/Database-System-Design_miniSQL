@@ -228,6 +228,7 @@ int BufferManager::write_block(){
 	while(1){
         int n=reference_bit_count;
 		if(reference_bit[n]==false && pin_bit[n]==false){
+            if(buffer[n]==NULL) return n;
 			if(buffer[n]->is_dirty){
 				int type=0;
 				Block *block;

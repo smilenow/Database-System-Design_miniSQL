@@ -2,7 +2,7 @@
 //  buffermanager.cpp
 //  miniSQL
 //
-//  Created by Kael on 10/18/14.
+//  Created by SmilENow on 10/18/14.
 //  Copyright (c) 2014 Xinyuan Lu. All rights reserved.
 //
 
@@ -157,6 +157,9 @@ bool BufferManager::write_recordblock(int block_n){
     buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
+    pin_bit[block_n]=false;
+    reference_bit[block_n]=false;
+//    printf("write_record\n");
 	return true;
 }
 
@@ -184,6 +187,9 @@ bool BufferManager::write_catalogblock(int block_n){
     buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
+    pin_bit[block_n]=false;
+    reference_bit[block_n]=false;
+//    printf("write_catalog\n");
 	return true;
 }
 
@@ -211,6 +217,9 @@ bool BufferManager::write_indexblock(int block_n){
     buffer[block_n]=NULL;
     block_number--;
 	filename.erase(it);
+    pin_bit[block_n]=false;
+    reference_bit[block_n]=false;
+//    printf("write_index_buffer\n");
 	return true;
 }
 
@@ -450,16 +459,16 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	}
 	else if(type==IB){
 //		tablename=tablename+"$"+indexname;
-		for(int i=0; i<Buffer_Capacity; i++){
-			if(find_type(buffer[i])==IB){
-                std::map<int, std::string>::iterator it;
-				it=filename.find(i);
-				if(tablename==it->second && buffer[i]->block_id==bid){
-					reference_bit[i]=true;
-					return buffer[i];
-				}
-			}
-		}
+//		for(int i=0; i<Buffer_Capacity; i++){
+//			if(find_type(buffer[i])==IB){
+//                std::map<int, std::string>::iterator it;
+//				it=filename.find(i);
+//				if(tablename==it->second && buffer[i]->block_id==bid){
+//					reference_bit[i]=true;
+//					return buffer[i];
+//				}
+//			}
+//		}
 	}
 	else{
 		for(int i=0; i<Buffer_Capacity; i++){
@@ -557,19 +566,31 @@ Block* BufferManager::newBlock(int type, std::string tablename, int NodeType, in
 std::vector<IndexBlock> BufferManager::load_tree(std::string indexname){
 	std::vector<IndexBlock> tree;
 	int n=get_block_number(IB, indexname);
+    if(n>1){
+        
+    }
+    char fullname[2*max_name_length];
+    strcpy(fullname, "/Users/SmilENow/dsd/index/");
+    strcat(fullname, indexname.c_str());
+    int fd=open(fullname, O_RDONLY);
+    if(fd<0) assert(0);
     
+    Block* tempb=new IndexBlock_Buffer();
     for(int j=0; j<n; j++){
-        Block* tempb=getBlock(IB, indexname, j);
+        read(fd, tempb, block_size);
         IndexBlock tempib=
             IndexBlock_Buffer::IndexBlockBuffer_To_IndexBlock(*dynamic_cast<IndexBlock_Buffer *>(tempb));
         tree.push_back(tempib);
-        storeBlock(indexname, tempb);
+//        printf("load_index\n");
+//        storeBlock(indexname, tempb);
 	}
+    close(fd);
+    delete tempb;
     return tree;
 }
 
 bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tree){
-	get_block_number(IB, indexname);
+//	get_block_number(IB, indexname);
 	char fullname[2*max_name_length];
 	int fd;
 	// int offset;
@@ -584,6 +605,7 @@ bool BufferManager::store_tree(std::string indexname, std::vector<IndexBlock> tr
         ib=&(*j);
         IndexBlock_Buffer tempib=IndexBlock_Buffer::IndexBlock_To_IndexBlockBuffer(*ib);
 		write(fd, &tempib, block_size);
+//        printf("write_index\n");
 	}
 	close(fd);
 	return true;

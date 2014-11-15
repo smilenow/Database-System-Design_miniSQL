@@ -10,17 +10,17 @@
 #define __miniSQL__IndexManager__
 
 #include <stdio.h>
-#include <unordered_map>
 #include "BPlusTree.h"
 
 class IndexManager{
 public:
-//    std::unordered_map<std::string,BPlusTree*> BPlusTreeGroup;
     BPlusTree CurrentBPT;
+    std::string IndexName;
     
 public:
-    IndexManager(){};
-    virtual ~IndexManager(){};
+    IndexManager():IndexName(""){};
+    IndexManager(std::string IndexName):IndexName(IndexName){};
+    virtual ~IndexManager(){ if (this->IndexName != "" ) CurrentBPT.store_BPlusTree(); };
     
     void CreateIndex(std::string IndexName,int IndexType,std::vector<Value> data,std::vector<slot> dataslot,int valuecharlen);
     void DropIndex(std::string IndexName);

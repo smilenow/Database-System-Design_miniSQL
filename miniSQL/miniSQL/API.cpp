@@ -99,6 +99,7 @@ Recordinfo API::select(sqlcommand& sql){
             // erase conditioni?????
 		}
 	}
+    
 	if(!indexflag) {
 		std::vector<slot> s;
 		result=recordmanager->Select_Record(sql, table, false, s);
@@ -280,8 +281,10 @@ Recordinfo API::createIndex(sqlcommand& sql, bool flag){
     std::string indexname=sql.createIndexInfo[0];
     std::string attrname=sql.createIndexInfo[2];
 //    if(catalogmanager->attrname)
-    if(!catalogmanager->isUnique(tablename, attrname) && !flag){
-        Recordinfo result=Recordinfo(false, "You can only create an index on unique attribute!", Result(), 0);
+    // 保证index一定会在unique上面创建，primary key
+    //
+    if(!catalogmanager->isUnique(tablename, attrname) && !catalogmanager->isPK(tablename, attrname) ){
+        Recordinfo result=Recordinfo(false, "You can only create an index on unique/primary attribute!", Result(), 0);
         return result;
     }
     int attrtype=catalogmanager->getAttrType(tablename, sql.createIndexInfo[2]);

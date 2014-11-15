@@ -13,6 +13,8 @@
     #include "y.tab.h"
     extern void prompt();
     extern void reset();
+    extern clock_t t1,t2;
+    extern int fileflag;
 %}
 
 nondigit	[a-zA-z_]
@@ -90,14 +92,17 @@ identifier  {nondigit}({nondigit}|{digit})*
     return STRING;
 }
 '[^\'\n]*$	{yyerror("Unterminated string"); }
-\"[^\"\n]*$	{yyerror("Unterminated string"); }
+\"[^\"\n]*$	{yyerror("Unterminated string");}
 
-.	{yyerror("Invalid character");}
+.	{printf("Invalid character!\n");}
 
 
 %%
 int yywrap(void){
     yyin=stdin;
+    fileflag=0;
+    t2=clock();
+    printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     prompt();
     return 0;
 }

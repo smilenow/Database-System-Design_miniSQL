@@ -3,6 +3,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <time.h>
     #include "sqlcommand.h"
     #include "base.h"
     #include "API.h"
@@ -32,6 +33,8 @@
     bool exists(std::string s1,std::string s2,std::string s3="");
     std::string primaryAttr;
     std::string pk;
+    clock_t t1,t2;
+    int fileflag=0;
     
     CatalogManager *catalogmanager;
     RecordManager *recordmanager;
@@ -44,7 +47,7 @@
 %union {char *strVal;char *id;int intVal;float flVal;char *condition;}
 %token UNIQUE TABLE SELECT INSERT DROP DELETE INDEX QUIT EXECFILE FROM WHERE CREATE RESET
 %token INTO VALUES ON PRIMARY KEY INT CHAR FLOAT ANND
-%token UNEXPECTED WHITESPACE FEOF
+%token UNEXPECTED WHITESPACE FEOF ERR
 %token <strVal> STRING FILENAME
 %token <id> identifier
 %token <intVal> intnum
@@ -66,53 +69,75 @@
 
 
 line	: create_table ';'	{
-    if(checkLexeme("createtable")){
+           if(!fileflag) t1=clock();
+   if(checkLexeme("createtable")){
+ //       if(!fileflag) t1=clock();
         execute("createtable");
-        //sql.getCreateTableInfo();
     }
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     reset();
 }
 | create_index	';'	{
+            if(!fileflag) t1=clock();
     if(checkLexeme("createindex")){
+  //      if(!fileflag) t1=clock();
         execute("createindex");
-        sql.getCreateIndexInfo();
     }
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     reset();
 }
 | select_statement ';'	{
+            if(!fileflag) t1=clock();
     if(checkLexeme("select")){
+    //    if(!fileflag) t1=clock();
         execute("select");
     }
-    //sql.getconditions();
-    //sql.getSelectInfo();
-    //printf("%s\n", sql.getSelectTablen().c_str());
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | delete_statement ';'	{
-    if(checkLexeme("delete")){
+          if(!fileflag) t1=clock();
+  if(checkLexeme("delete")){
+//        if(!fileflag) t1=clock();
         execute("delete");
     }
-    //sql.getconditions();
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | drop_table ';'	{
-    if(checkLexeme("droptable"))
-    execute("droptable");
-    //printf("%s",sql.getTablen().c_str());
+            if(!fileflag) t1=clock();
+    if(checkLexeme("droptable")){
+//        if(!fileflag) t1=clock();
+        execute("droptable");
+    }
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     reset();
 }
 | drop_index ';'	{
-    if(checkLexeme("dropindex")){
+           if(!fileflag) t1=clock();
+   if(checkLexeme("dropindex")){
+  //      if(!fileflag) t1=clock();
         execute("dropindex");
     }
-    //printf("%s",sql.getIndexn().c_str());
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     reset();
 }
 | insert_statement ';' {
-    if(checkLexeme("insert")){
+          if(!fileflag) t1=clock();
+  if(checkLexeme("insert")){
+//        if(!fileflag) t1=clock();
         execute("insert");
     }
-    //sql.getcolValue();
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
     reset();
 }
 | EXECFILE STRING ';' {
@@ -122,9 +147,11 @@ line	: create_table ';'	{
     strcpy(file,s.c_str());
     strcat(file,path);
     FILE *fp=fopen(file,"r");
-    if(fp==NULL)	printf("cannot open file %s\n", $2);
-    else yyin=fp;
-    yyparse();
+    if(fp==NULL)	printf("Cannot open file %s\n", $2);
+    else    { fileflag=1;t1=clock();yyin=fp;}
+   // t2=clock();
+   // printf("?t2=%lu",t2);
+   // yyparse();
 }
 | QUIT ';'	{
     printf("Bye~\n");
@@ -135,16 +162,7 @@ line	: create_table ';'	{
     delete buffermanager;
     exit(EXIT_SUCCESS);
 }
-| RESET {
-    printf("a");
-    yyin=stdin;
-    reset();
-}
-| line RESET{
-    printf("a");
-    yyin=stdin;
-    reset();
-}
+
 | line QUIT ';'	{
     printf("Bye~\n");
     delete api;
@@ -155,59 +173,98 @@ line	: create_table ';'	{
     exit(EXIT_SUCCESS);
 }
 | line create_table ';'	{
+    if(!fileflag) t1=clock();
     if(checkLexeme("createtable")){
         execute("createtable");
-        sql.getCreateTableInfo();
     }
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line create_index ';' {
-    if(checkLexeme("createindex"))
-    execute("createindex");
-    //sql.getCreateIndexInfo();
+            if(!fileflag) t1=clock();
+    if(checkLexeme("createindex")){
+//        if(!fileflag) t1=clock();
+        execute("createindex");
+    }
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line select_statement ';' {
-    if(checkLexeme("select"))
-    execute("select");
+          if(!fileflag) t1=clock();
+  if(checkLexeme("select")){
+//        if(!fileflag) t1=clock();
+        execute("select");
+    }
     //sql.getconditions();
     //sql.getSelectInfo();
     //printf("%s\n", sql.getSelectTablen().c_str());
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line delete_statement ';'	{
-    if(checkLexeme("delete"))
-    execute("delete");
+            if(!fileflag) t1=clock();
+    if(checkLexeme("delete")){
+//        if(!fileflag) t1=clock();
+        execute("delete");
+    }
     //sql.getconditions();
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line insert_statement ';' {
-    if(checkLexeme("insert"))
-    execute("insert");
+            if(!fileflag) t1=clock();
+    if(checkLexeme("insert")){
+//        if(!fileflag) t1=clock();
+        execute("insert");
+    }
     //sql.getcolValue();
+    if(!fileflag) t2=clock();
+    if(!fileflag)    printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line drop_table ';' {
-    if(checkLexeme("droptable"))
-    execute("droptable");
+            if(!fileflag) t1=clock();
+    if(checkLexeme("droptable")){
+//        if(!fileflag) t1=clock();
+        execute("droptable");
+    }
     //printf("%s",sql.getTablen().c_str());
+    if(!fileflag) t2=clock();
+    if(!fileflag)     printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line drop_index ';' {
-    if(checkLexeme("dropindex"))
-    execute("dropindex");
+            if(!fileflag) t1=clock();
+    if(checkLexeme("dropindex")){
+//        if(!fileflag) t1=clock();
+        execute("dropindex");
+    }
     //printf("%s",sql.getIndexn().c_str());
+    if(!fileflag) t2=clock();
+    if(!fileflag)    printf("Time elapsed: %f seconds\n", ((double)t2-(double)t1)/CLOCKS_PER_SEC);
+
     reset();
 }
 | line EXECFILE STRING ';' {
     const char* path=$3;
-    std::string s="/users/sophie/downloads/minisql 7/minisql/";
+    std::string s="/Users/SmilENow/Desktop/Code/DSD/Database-System-Design_miniSQL/miniSQL/miniSQL/";
     char file[50];
     strcpy(file,s.c_str());
     strcat(file,path);
     FILE *fp=fopen(file,"r");
-    if(fp==NULL)	printf("cannot open file %s\n", $3);
-    else yyin=fp;
+    if(fp==NULL)	printf("Cannot open file %s\n", $3);
+    else 
+    { fileflag=1;t1=clock();yyin=fp;}
     yyparse();
 }
 ;
@@ -326,6 +383,7 @@ void yyerror(const char *s)
     printf("%s\n",s);
     sql.clear();
     reset();
+    
 }
 void prompt(){
     printf(">>> ");
@@ -565,6 +623,9 @@ void reset(){
     attrname="";
     sql.clear();
     pk="";
+  //  if(!fileflag) t2=clock();
+   // if(!fileflag)    printf("Time elapsed: %lu \n", t2-t1);
+
   //  yyparse();
 }
 int main()

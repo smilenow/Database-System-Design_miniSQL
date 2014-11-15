@@ -624,6 +624,22 @@ bool BufferManager::delete_tree(std::string indexname){
 	// 析构B+树
 }
 
+void BufferManager::delete_blocks(std::string tablename){
+    for(int i=0; i<Buffer_Capacity; i++){
+        if(buffer[i]!=NULL && strcmp(buffer[i]->tablename, tablename.c_str())==0){
+            std::map<int, std::string >::iterator it;
+            it=filename.find(i);
+            
+            delete buffer[i];
+            buffer[i]=NULL;
+            block_number--;
+            filename.erase(it);
+            pin_bit[i]=false;
+            reference_bit[i]=false;
+        }
+    }
+}
+
 int BufferManager::getTableCatalogBlocksNumber(){
     return get_block_number(TCB, "tablecatalogblock");
 }

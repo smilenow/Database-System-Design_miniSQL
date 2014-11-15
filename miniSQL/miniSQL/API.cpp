@@ -163,22 +163,24 @@ Recordinfo API::del(sqlcommand& sql){
     }
     else{
         result=recordmanager->Delete_Record(sql, table, true, slots);
+    }
         // delete record in index
         for(int i=0; i<catalogmanager->AttrCount(sql.tablename); i++){
             std::string attrname=catalogmanager->getAttrName(sql.tablename, i);
-            std::string indexname=catalogmanager->getIndexName(sql.tablename, attrname);
-            int indexattrtype=catalogmanager->getAttrType(sql.tablename, attrname);
-            for(int j=1; j<result.res.rows.size(); j++){
-                Value v;
-                switch(indexattrtype){
-                    case 0:v=Value(indexattrtype, std::stoi(result.res.rows.at(j).cols.at(i)));break;
-                    case 1:v=Value(indexattrtype, result.res.rows.at(j).cols.at(i));break;
-                    case -1:v=Value(indexattrtype, std::stoi(result.res.rows.at(j).cols.at(i)));break;
+            if(catalogmanager->hasIndex(sql.tablename, attrname)){
+                std::string indexname=catalogmanager->getIndexName(sql.tablename, attrname);
+                int indexattrtype=catalogmanager->getAttrType(sql.tablename, attrname);
+                for(int j=1; j<result.res.rows.size(); j++){
+                    Value v;
+                    switch(indexattrtype){
+                        case 0:v=Value(indexattrtype, std::stoi(result.res.rows.at(j).cols.at(i)));break;
+                        case 1:v=Value(indexattrtype, result.res.rows.at(j).cols.at(i));break;
+                        case -1:v=Value(indexattrtype, std::stof(result.res.rows.at(j).cols.at(i)));break;
+                    }
+                    indexmanager->_delete(indexname, v);
                 }
-                indexmanager->_delete(indexname, v);
             }
         }
-    }
     return result;
 }
 
@@ -340,8 +342,15 @@ Recordinfo API::dropTable(sqlcommand& sql){
             catalogmanager->dropIndex(catalogmanager->getIndexName(tablename, attrname));
         }
     }
+    // delete blocks
+    buffermanager->delete_blocks(tablename);
     // delete catalog
     catalogmanager->dropTable(sql.tablename);
+    // delete files
+    char fullname[2*max_name_length];
+    strcpy(fullname, "/Users/SmilENow/dsd/data/");
+    strcat(fullname, tablename.c_str());
+    remove(fullname);
     return Recordinfo(1, "", Result(), 0); // further improve
 }
 

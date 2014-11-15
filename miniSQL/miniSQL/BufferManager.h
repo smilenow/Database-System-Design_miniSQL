@@ -42,6 +42,7 @@ public:
 	// 为了防止产生歧义，getblocknumber使用fname(file)做变量名
 	// 事实上只有index的fname相对特殊
 	int get_block_number(int type, std::string fname);
+    void delete_blocks(std::string tablename);
 
     // for catalog manager
     int getTableCatalogBlocksNumber();

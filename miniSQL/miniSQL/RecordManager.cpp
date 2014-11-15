@@ -266,6 +266,18 @@ Recordinfo RecordManager::Delete_Record(sqlcommand &sql, Table &table, bool inde
     long num=0;
     bool successful = false;
     
+    // 如果是select *, 那就补全
+//    if (what_to_select[0] == "*"){
+        what_to_select.clear();
+        for (auto &i:attrs) what_to_select.push_back(i.name);
+    
+    // 记录查询内容在attrs整个表中的下标
+    what_to_select_indexof_attrs.clear();
+    for (auto &i:what_to_select){
+        for (int j=0;j<attrs.size();j++)
+            if (!i.compare(attrs[j].name)) what_to_select_indexof_attrs.push_back(j);
+    }
+    
     if (NextCanUse.count(TableName)>0){
         NowNextCanUse = NextCanUse[TableName];
         NextCanUse.erase(TableName);

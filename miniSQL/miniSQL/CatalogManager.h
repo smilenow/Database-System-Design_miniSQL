@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
-#include "block.h"
+#include "Block.h"
 #include "Base.h"
 #include "sqlcommand.h"
 #include "BufferManager.h"

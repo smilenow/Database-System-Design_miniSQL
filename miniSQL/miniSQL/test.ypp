@@ -5,7 +5,7 @@
     #include <string.h>
     #include <time.h>
     #include "sqlcommand.h"
-    #include "base.h"
+    #include "Base.h"
     #include "API.h"
     #include "CatalogManager.h"
     #include <unistd.h>

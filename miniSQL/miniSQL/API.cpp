@@ -9,6 +9,7 @@
 // v2.0, see comment in "APT.h"
 
 #include "API.h"
+#include <unistd.h>
 
 Recordinfo API::dealCmd(sqlcommand& sql){
 	// 使用get方法更好，这里先直接调用public
@@ -90,11 +91,14 @@ Recordinfo API::select(sqlcommand& sql){
             if(conditioni==sql.conditions.begin())
                 slots=s;
             else{
+                std::vector<slot> r=std::vector<slot>();
                 for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
                     bool f=false;
-                    for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
-                    if(f==false)slots.erase(i);
+                    for(std::vector<slot>::iterator j=s.begin(); j<s.end(); j++)
+                        if(i->block_id==j->block_id && i->offset==j->offset) f=true;
+                    if(f==true) r.push_back(*i);
                 }
+                slots=r;
             }
             // erase conditioni?????
 		}
@@ -147,11 +151,14 @@ Recordinfo API::del(sqlcommand& sql){
             if(conditioni==sql.conditions.begin())
                 slots=s;
             else{
+                std::vector<slot> r=std::vector<slot>();
                 for(std::vector<slot>::iterator i=slots.begin(); i<slots.end(); i++){
                     bool f=false;
-                    for(int j=0; j<s.size(); j++) if(i->block_id==s[j].block_id && i->offset==slots[j].offset) f=true;
-                    if(f==false)slots.erase(i);
+                    for(std::vector<slot>::iterator j=s.begin(); j<s.end(); j++)
+                        if(i->block_id==j->block_id && i->offset==j->offset) f=true;
+                    if(f==true) r.push_back(*i);
                 }
+                slots=r;
             }
             // erase conditioni?????
         }
@@ -333,6 +340,7 @@ Recordinfo API::dropTable(sqlcommand& sql){
     tempsql.tablename=sql.tablename;
     Table temptable=catalogmanager->getTable(sql.tablename);
     recordmanager->Delete_Record(tempsql, temptable, 0, std::vector<slot>());
+    recordmanager->NextCanUse.erase(sql.tablename);
     
     // delete all indexes
     for(int i=0; i<catalogmanager->AttrCount(tablename); i++){
@@ -348,7 +356,8 @@ Recordinfo API::dropTable(sqlcommand& sql){
     catalogmanager->dropTable(sql.tablename);
     // delete files
     char fullname[2*max_name_length];
-    strcpy(fullname, "/Users/SmilENow/dsd/data/");
+    getcwd(fullname, 2*max_name_length);
+    strcat(fullname, "/dsd/data/");
     strcat(fullname, tablename.c_str());
     remove(fullname);
     return Recordinfo(1, "", Result(), 0); // further improve

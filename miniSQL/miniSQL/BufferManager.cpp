@@ -324,7 +324,6 @@ void BufferManager::write_all(){
 // 根据上层指定的block指针写回去一个block，会删除buffer里面的该block
 // 置两个bit
 bool BufferManager::storeBlock(std::string tablename, Block *block){
-	printf("storeblock_start\n");
     int i;
 	for(i=0; i<Buffer_Capacity; i++){
 		if(buffer[i]==block) break;
@@ -344,7 +343,6 @@ bool BufferManager::storeBlock(std::string tablename, Block *block){
 	}
 	reference_bit[i]=false;
 	pin_bit[i]=false;
-	printf("storeblock_end\n");
 	return true;
 }
 
@@ -353,7 +351,6 @@ int BufferManager::get_block_number(int type, std::string fname){
 	char filename[3*max_name_length];
 	int fd;
 	off_t offset;
-	printf("get_block_number_start\n");
     getcwd(filename,3*max_name_length);
 	switch(type){
 		case DB:
@@ -375,7 +372,6 @@ int BufferManager::get_block_number(int type, std::string fname){
 	offset=lseek(fd, 0, SEEK_END);
     close(fd);
 	if(offset==0) return 0;
-	printf("get_block_number_end: %d\n", offset/block_size);
 	return (int)ceil((float)offset/block_size);
 }
 
@@ -387,7 +383,6 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 	int fd;
 	char fullname[3*max_name_length];
 	off_t offset=bid*block_size;
-	printf("load_block_start\n");
     getcwd(fullname, 3*max_name_length);
 	switch(type){
 		case DB:
@@ -425,9 +420,6 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 		buffer[block_n]=new AttrCatalogBlock();
 		break;
 	}
-	printf("dynamic_cast_test\n");
-	dynamic_cast<TableCatalogBlock *>(buffer[block_n]);
-	printf("end\n");
 	lseek(fd, offset, SEEK_SET);
 	read(fd, buffer[block_n], block_size);
     close(fd);
@@ -435,10 +427,6 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 	buffer[block_n]->is_valid=true;
     pin_bit[block_n]=false;
 	buffer[block_n]->is_dirty=false;
-	printf("dynamic_cast_test\n");
-	dynamic_cast<TableCatalogBlock *>(buffer[block_n]);
-	printf("end\n");
-	printf("load_block_end\n");
 	return;
 }
 
@@ -450,9 +438,6 @@ void BufferManager::load_block(int block_n, int type, std::string tablename, int
 Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 	// first find in buffer
 	// 可以优化
-    printf("get_block_start\n");
-    printf("block_number=%d\n", block_number);
-    printf("type=%d\n", type);
 	if(type==DB){
 		for(int i=0; i<Buffer_Capacity; i++){
 			if(find_type(buffer[i])==DB){
@@ -496,9 +481,6 @@ Block* BufferManager::getBlock(int type, std::string tablename, int bid){
 		load_block(block_n, type, tablename, bid);
 	}
 	filename.insert(std::pair<int,std::string>(block_n, tablename));
-	printf("%d\n", (long long)buffer[block_n]);
-	printf("%d\n", buffer[block_n]->block_id);
-	printf("get_block_end\n");
 	return buffer[block_n];
 }
 
@@ -647,12 +629,7 @@ int BufferManager::getIndexCatalogBlocksNumber(){
     return get_block_number(ICB, "indexcatalogblock");
 }
 TableCatalogBlock* BufferManager::getTableCatalogBlocks(int block_id){
-	printf("----------\n");
     Block *b=getBlock(TCB, "tablecatalogblock", block_id);
-    printf("here\n");
-    if(dynamic_cast<TableCatalogBlock *>(b)==NULL) assert(0);
-    printf("----\n");
-    printf("head_size=%d\n", b->head_size);
     TableCatalogBlock *tcb=dynamic_cast<TableCatalogBlock *>(b);
     return tcb;
 }
@@ -681,7 +658,6 @@ void BufferManager::storeIndexCatalogBlocks(int block_id, IndexCatalogBlock* now
 TableCatalogBlock* BufferManager::newTableCatalogBlocks(){
 //    return (dynamic_cast<TableCatalogBlock *>(newBlock(TCB, "tablecatalogblock")));
     Block *b=newBlock(TCB, "tablecatalogblock");
-    if(dynamic_cast<TableCatalogBlock *>(b)==NULL) assert(0);
     TableCatalogBlock *tcb=dynamic_cast<TableCatalogBlock *>(b);
     return tcb;
 }
